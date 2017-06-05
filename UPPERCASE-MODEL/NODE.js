@@ -1,26 +1,47 @@
 /*
 
-Welcome to UPPERCASE! (http://uppercase.io)
+Welcome to UPPERCASE-MODEL! (http://uppercase.io)
 
 */
 
-FOR_BOX(function(box) {'use strict';
+FOR_BOX((box) => {
 
-	/**
-	 * Model(include CRUD functions) interface
+	/*
+	 * MODEL 클래스
 	 */
 	box.MODEL = CLASS({
 
-		init : function(inner, self, params) {
+		init : (inner, self, params) => {
 			//REQUIRED: params
 			//REQUIRED: params.name
-			//OPTIONAL: params.config
+			//OPTIONAL: params.initData
+			//OPTIONAL: params.methodConfig
+			//OPTIONAL: params.methodConfig.create
+			//OPTIONAL: params.methodConfig.create.valid
+			//OPTIONAL: params.methodConfig.create.role
+			//OPTIONAL: params.methodConfig.create.authKey
+			//OPTIONAL: params.methodConfig.create.adminRole
+			//OPTIONAL: params.methodConfig.get
+			//OPTIONAL: params.methodConfig.get.role
+			//OPTIONAL: params.methodConfig.update
+			//OPTIONAL: params.methodConfig.update.valid
+			//OPTIONAL: params.methodConfig.update.role
+			//OPTIONAL: params.methodConfig.update.authKey
+			//OPTIONAL: params.methodConfig.update.adminRole
+			//OPTIONAL: params.methodConfig.remove
+			//OPTIONAL: params.methodConfig.remove.role
+			//OPTIONAL: params.methodConfig.remove.authKey
+			//OPTIONAL: params.methodConfig.remove.adminRole
+			//OPTIONAL: params.methodConfig.find
+			//OPTIONAL: params.methodConfig.find.role
+			//OPTIONAL: params.methodConfig.count
+			//OPTIONAL: params.methodConfig.count.role
+			//OPTIONAL: params.methodConfig.checkIsExists
+			//OPTIONAL: params.methodConfig.checkIsExists.role
+			//OPTIONAL: params.isNotUsingObjectId
+			//OPTIONAL: params.isNotUsingHistory
 			
-			var
-			// get box name.
-			getBoxName;
-			
-			self.getBoxName = getBoxName = function() {
+			let getBoxName = self.getBoxName = () => {
 				return box.boxName;
 			};
 
@@ -29,227 +50,104 @@ FOR_BOX(function(box) {'use strict';
 	});
 });
 
-FOR_BOX(function(box) {
-	'use strict';
+FOR_BOX((box) => {
 
-	OVERRIDE(box.MODEL, function(origin) {
+	OVERRIDE(box.MODEL, (origin) => {
 
-		/**
-		 * Model(include CRUD functions) class
+		/*
+		 * MODEL 클래스
 		 */
 		box.MODEL = CLASS({
 			
-			preset : function() {
+			preset : () => {
 				return origin;
 			},
 
-			init : function(inner, self, params) {
+			init : (inner, self, params) => {
 				//REQUIRED: params
 				//REQUIRED: params.name
 				//OPTIONAL: params.initData
 				//OPTIONAL: params.methodConfig
+				//OPTIONAL: params.methodConfig.create
+				//OPTIONAL: params.methodConfig.create.valid
+				//OPTIONAL: params.methodConfig.create.role
+				//OPTIONAL: params.methodConfig.create.authKey
+				//OPTIONAL: params.methodConfig.create.adminRole
+				//OPTIONAL: params.methodConfig.get
+				//OPTIONAL: params.methodConfig.get.role
+				//OPTIONAL: params.methodConfig.update
+				//OPTIONAL: params.methodConfig.update.valid
+				//OPTIONAL: params.methodConfig.update.role
+				//OPTIONAL: params.methodConfig.update.authKey
+				//OPTIONAL: params.methodConfig.update.adminRole
+				//OPTIONAL: params.methodConfig.remove
+				//OPTIONAL: params.methodConfig.remove.role
+				//OPTIONAL: params.methodConfig.remove.authKey
+				//OPTIONAL: params.methodConfig.remove.adminRole
+				//OPTIONAL: params.methodConfig.find
+				//OPTIONAL: params.methodConfig.find.role
+				//OPTIONAL: params.methodConfig.count
+				//OPTIONAL: params.methodConfig.count.role
+				//OPTIONAL: params.methodConfig.checkIsExists
+				//OPTIONAL: params.methodConfig.checkIsExists.role
 				//OPTIONAL: params.isNotUsingObjectId
 				//OPTIONAL: params.isNotUsingHistory
-
-				var
-				// name
-				name = params.name,
-
-				// init data.
-				initData = params.initData,
-
-				// method config
-				methodConfig = params.methodConfig,
 				
-				// is not using object id
-				isNotUsingObjectId = params.isNotUsingObjectId,
-
-				// is not using history
-				isNotUsingHistory = params.isNotUsingHistory,
-
-				// create config
-				createConfig,
-
-				// get config
-				getConfig,
-
-				// update config
-				updateConfig,
-
-				// remove config
-				removeConfig,
-
-				// find config
-				findConfig,
-
-				// count onifg
-				countConfig,
-
-				// check is exists conifg
-				checkIsExistsConfig,
-
-				// create valid
-				createValid,
-
-				// update valid
-				updateValid,
-
-				// create role
-				createRole,
-
-				// get role
-				getRole,
-
-				// update role
-				updateRole,
-
-				// remove role
-				removeRole,
-
-				// find role
-				findRole,
-
-				// count role
-				countRole,
-
-				// check is exists role
-				checkIsExistsRole,
-
-				// create admin role
-				createAdminRole,
-
-				// update admin role
-				updateAdminRole,
-
-				// remove admin role
-				removeAdminRole,
-
-				// create auth key
-				createAuthKey,
-
-				// update auth key
-				updateAuthKey,
-
-				// remove auth key
-				removeAuthKey,
-
-				// is _id assignable
-				is_idAssignable,
-
-				// before create listeners
-				beforeCreateListeners = [],
-
-				// after create listeners
-				afterCreateListeners = [],
-
-				// before get listeners
-				beforeGetListeners = [],
-
-				// after get listeners
-				afterGetListeners = [],
-
-				// before update listeners
-				beforeUpdateListeners = [],
-
-				// after update listeners
-				afterUpdateListeners = [],
-
-				// before remove listeners
-				beforeRemoveListeners = [],
-
-				// after remove listeners
-				afterRemoveListeners = [],
-
-				// before find listeners
-				beforeFindListeners = [],
-
-				// after find listeners
-				afterFindListeners = [],
-
-				// before count listeners
-				beforeCountListeners = [],
-
-				// after count listeners
-				afterCountListeners = [],
-
-				// before check is exists listeners
-				beforeCheckIsExistsListeners = [],
-
-				// after check is exists listeners
-				afterCheckIsExistsListeners = [],
-
-				// db
-				db = box.DB({
+				let name = params.name;
+				let initData = params.initData;
+				let methodConfig = params.methodConfig;
+				let isNotUsingObjectId = params.isNotUsingObjectId;
+				let isNotUsingHistory = params.isNotUsingHistory;
+				
+				let createConfig;
+				let getConfig;
+				let updateConfig;
+				let removeConfig;
+				let findConfig;
+				let countConfig;
+				let checkIsExistsConfig;
+				
+				let createValid;
+				let updateValid;
+				
+				let createRole;
+				let getRole;
+				let updateRole;
+				let removeRole;
+				let findRole;
+				let countRole;
+				let checkIsExistsRole;
+				
+				let createAdminRole;
+				let updateAdminRole;
+				let removeAdminRole;
+				
+				let createAuthKey;
+				let updateAuthKey;
+				let removeAuthKey;
+				
+				let is_idAssignable;
+				
+				let beforeCreateListeners = [];
+				let afterCreateListeners = [];
+				let beforeGetListeners = [];
+				let afterGetListeners = [];
+				let beforeUpdateListeners = [];
+				let afterUpdateListeners = [];
+				let beforeRemoveListeners = [];
+				let afterRemoveListeners = [];
+				let beforeFindListeners = [];
+				let afterFindListeners = [];
+				let beforeCountListeners = [];
+				let afterCountListeners = [];
+				let beforeCheckIsExistsListeners = [];
+				let afterCheckIsExistsListeners = [];
+				
+				let db = box.DB({
 					name : name,
 					isNotUsingObjectId : isNotUsingObjectId,
 					isNotUsingHistory : isNotUsingHistory
-				}),
-
-				// get name.
-				getName,
-
-				// get init data.
-				getInitData,
-
-				// get create valid.
-				getCreateValid,
-
-				// get update valid.
-				getUpdateValid,
-
-				// get db.
-				getDB,
-
-				// on.
-				on,
-
-				// inner create.
-				innerCreate,
-
-				// inner get.
-				innerGet,
-
-				// inner update.
-				innerUpdate,
-
-				// inner remove.
-				innerRemove,
-
-				// inner find.
-				innerFind,
-
-				// inner count.
-				innerCount,
-
-				// inner check is exists.
-				innerCheckIsExists,
-
-				// create.
-				create,
-
-				// get.
-				get,
-
-				// update.
-				update,
-				
-				// update no history.
-				updateNoHistory,
-				
-				// update no record.
-				updateNoRecord,
-
-				// remove.
-				remove,
-
-				// find.
-				find,
-
-				// count.
-				count,
-
-				// check is exists.
-				checkIsExists;
+				});
 
 				// init method config.
 				if (methodConfig !== undefined) {
@@ -301,74 +199,78 @@ FOR_BOX(function(box) {
 
 				// init not inited data set. (when not cpu clustering or worker id is 1)
 				if ((CPU_CLUSTERING.getWorkerId() === undefined || CPU_CLUSTERING.getWorkerId() === 1) && initData !== undefined) {
+					
+					let $or = [];
 
-					RUN(function() {
+					EACH(initData, (value, name) => {
 
-						var
-						// or
-						$or = [];
-
-						EACH(initData, function(value, name) {
-
-							var
-							// filter
-							filter = {};
-							
-							filter[name] = TO_DELETE;
+						let filter = {};
 						
-							$or.push(filter);
-						});
-						
-						if ($or.length > 0) {
-
-							db.find({
-								filter : {
-									$or : $or
-								},
-								isFindAll : true
-							}, function(notInitedDataSet) {
-								
-								if (notInitedDataSet.length > 0) {
-									
-									console.log('[UPPERCASE-MODEL] Found ' + notInitedDataSet.length + ' not inited data set in `' + box.boxName + '.' + name + '`.');
-									
-									EACH(notInitedDataSet, function(notInitedData) {
-										
-										EACH(initData, function(value, name) {
-											if (notInitedData[name] === undefined) {
-												notInitedData[name] = value;
-											}
-										});
-			
-										db.update(notInitedData);
-									});
-								}
-							});
-						}
+						filter[name] = TO_DELETE;
+					
+						$or.push(filter);
 					});
+					
+					if ($or.length > 0) {
+
+						db.find({
+							filter : {
+								$or : $or
+							},
+							isFindAll : true
+						}, (notInitedDataSet) => {
+							
+							if (notInitedDataSet.length > 0) {
+								
+								SHOW_WARNING(box.boxName + '.' + name + 'Model', MSG({
+									ko : '초기화 되지 않은 데이터가 ' + notInitedDataSet.length + '개 있습니다. 모두 초기화합니다.'
+								}));
+								
+								NEXT(notInitedDataSet, [
+								(notInitedData, next) => {
+									
+									EACH(initData, (value, name) => {
+										if (notInitedData[name] === undefined) {
+											notInitedData[name] = value;
+										}
+									});
+									
+									db.update(notInitedData, next);
+								},
+								
+								() => {
+									return () => {
+										SHOW_WARNING(box.boxName + '.' + name + 'Model', MSG({
+											ko : notInitedDataSet.length + '개 데이터를 모두 초기화하였습니다.'
+										}));
+									};
+								}]);
+							}
+						});
+					}
 				}
 
-				self.getName = getName = function() {
+				let getName = self.getName = () => {
 					return name;
 				};
 
-				self.getInitData = getInitData = function() {
+				let getInitData = self.getInitData = () => {
 					return initData;
 				};
 
-				self.getCreateValid = getCreateValid = function() {
+				let getCreateValid = self.getCreateValid = () => {
 					return createValid;
 				};
 
-				self.getUpdateValid = getUpdateValid = function() {
+				let getUpdateValid = self.getUpdateValid = () => {
 					return updateValid;
 				};
 
-				self.getDB = getDB = function() {
+				let getDB = self.getDB = () => {
 					return db;
 				};
 
-				inner.on = on = function(methodName, funcOrFuncs) {
+				let on = inner.on = (methodName, funcOrFuncs) => {
 					//REQUIRED: methodName
 					//REQUIRED: funcOrFuncs
 					//OPTIONAL: funcOrFuncs.before
@@ -529,22 +431,20 @@ FOR_BOX(function(box) {
 					}
 				};
 
-				innerCreate = function(data, ret, clientInfo) {
+				let innerCreate = (data, ret, clientInfo) => {
 
-					var
-					// valid result
-					validResult;
+					let validResult;
 
 					// init data.
 					if (initData !== undefined) {
-						EACH(initData, function(value, name) {
+						EACH(initData, (value, name) => {
 							data[name] = value;
 						});
 					}
 
 					// valid data.
 					if (createValid !== undefined) {
-						validResult = createValid.check(data);
+						validResult = createValid.checkAndWash(data);
 					}
 
 					// when has error
@@ -559,14 +459,12 @@ FOR_BOX(function(box) {
 					else {
 
 						NEXT([
-						function(next) {
+						(next) => {
 							
-							var
-							// is not run next
-							isNotRunNext;
+							let isNotRunNext;
 
 							// run before create listeners.
-							EACH(beforeCreateListeners, function(beforeCreateListener) {
+							EACH(beforeCreateListeners, (beforeCreateListener) => {
 								
 								if (beforeCreateListener(data, next, ret, clientInfo) === false) {
 									
@@ -579,28 +477,26 @@ FOR_BOX(function(box) {
 							}
 						},
 
-						function(next) {
-							return function() {
+						(next) => {
+							return () => {
 
 								// create data in database.
 								db.create(data, {
 
-									error : function(errorMsg) {
+									error : (errorMsg) => {
 										ret({
 											errorMsg : errorMsg
 										});
 									},
 
-									success : function(savedData) {
+									success : (savedData) => {
 										
-										var
-										// is not run next
-										isNotRunNext;
+										let isNotRunNext;
 										
 										// run after create listeners.
-										EACH(afterCreateListeners, function(afterCreateListener) {
+										EACH(afterCreateListeners, (afterCreateListener) => {
 											
-											if (afterCreateListener(savedData, function() {
+											if (afterCreateListener(savedData, () => {
 												next(savedData);
 											}, ret, clientInfo) === false) {
 												
@@ -616,8 +512,8 @@ FOR_BOX(function(box) {
 							};
 						},
 						
-						function() {
-							return function(savedData) {
+						() => {
+							return (savedData) => {
 								
 								// broadcast.
 								box.BROADCAST({
@@ -627,7 +523,7 @@ FOR_BOX(function(box) {
 								});
 
 								// broadcast by property.
-								EACH(savedData, function(value, propertyName) {
+								EACH(savedData, (value, propertyName) => {
 									box.BROADCAST({
 										roomName : name + '/' + propertyName + '/' + value + '/create',
 										methodName : 'create',
@@ -643,7 +539,7 @@ FOR_BOX(function(box) {
 					}
 				};
 
-				innerGet = function(idOrParams, ret, clientInfo) {
+				let innerGet = (idOrParams, ret, clientInfo) => {
 					//OPTIONAL: idOrParams
 					//OPTIONAL: idOrParams.id
 					//OPTIONAL: idOrParams.filter
@@ -652,28 +548,26 @@ FOR_BOX(function(box) {
 					//OPTIONAL: idOrParams.isToCache
 					//OPTIONAL: idOrParams.clientInfo
 
-					var
-					// id
-					id,
-
-					// filter
-					filter,
-
-					// sort
-					sort,
-
-					// is random
-					isRandom,
-					
-					// is to cache
-					isToCache;
+					let isIdMode;
+					let id;
+					let filter;
+					let sort;
+					let isRandom;
+					let isToCache;
+					let params;
 
 					// init params.
 					if (idOrParams !== undefined) {
 						
 						if (CHECK_IS_DATA(idOrParams) !== true) {
+							
+							isIdMode = true;
+							
 							id = idOrParams;
-						} else {
+						}
+						
+						else {
+							
 							id = idOrParams.id;
 							filter = idOrParams.filter;
 							sort = idOrParams.sort;
@@ -684,20 +578,24 @@ FOR_BOX(function(box) {
 								clientInfo = idOrParams.clientInfo;
 							}
 						}
+						
+						params = {
+							id : id,
+							filter : filter,
+							sort : sort,
+							isRandom : isRandom,
+							isToCache : isToCache
+						};
 					}
 					
 					NEXT([
-					function(next) {
+					(next) => {
 						
-						var
-						// is not run next
-						isNotRunNext;
+						let isNotRunNext;
 
 						// run before get listeners.
-						EACH(beforeGetListeners, function(beforeGetListener) {
-							
-							if (beforeGetListener(idOrParams, next, ret, clientInfo) === false) {
-								
+						EACH(beforeGetListeners, (beforeGetListener) => {
+							if (beforeGetListener(isIdMode === true ? id : params, next, ret, clientInfo) === false) {
 								isNotRunNext = true;
 							}
 						});
@@ -707,38 +605,30 @@ FOR_BOX(function(box) {
 						}
 					},
 
-					function(next) {
-						return function() {
+					(next) => {
+						return () => {
 						
 							// get data in database.
-							db.get(idOrParams === undefined ? undefined : {
-								id : id,
-								filter : filter,
-								sort : sort,
-								isRandom : isRandom,
-								isToCache : isToCache
-							}, {
-		
-								error : function(errorMsg) {
+							db.get(params, {
+								
+								error : (errorMsg) => {
 									ret({
 										errorMsg : errorMsg
 									});
 								},
-		
-								notExists : function() {
+								
+								notExists : () => {
 									ret({});
 								},
-		
-								success : function(savedData) {
+								
+								success : (savedData) => {
 									
-									var
-									// is not run next
-									isNotRunNext;
+									let isNotRunNext;
 		
 									// run after get listeners.
-									EACH(afterGetListeners, function(afterGetListener) {
+									EACH(afterGetListeners, (afterGetListener) => {
 										
-										if (afterGetListener(savedData, function() {
+										if (afterGetListener(savedData, () => {
 											next(savedData);
 										}, ret, clientInfo) === false) {
 											
@@ -754,8 +644,8 @@ FOR_BOX(function(box) {
 						};
 					},
 					
-					function() {
-						return function(savedData) {
+					() => {
+						return (savedData) => {
 
 							ret({
 								savedData : savedData
@@ -764,38 +654,19 @@ FOR_BOX(function(box) {
 					}]);
 				};
 
-				innerUpdate = function(data, ret, clientInfo, isNotToSaveHistory, isNotToUpdateLastUpdateTime) {
+				let innerUpdate = (data, ret, clientInfo, isNotToSaveHistory, isNotToUpdateLastUpdateTime) => {
 
-					var
-					// id
-					id = data.id,
+					let id = data.id;
+					let $inc = data.$inc;
+					let $push = data.$push;
+					let $addToSet = data.$addToSet;
+					let $pull = data.$pull;
 					
-					// $inc
-					$inc = data.$inc,
-					
-					// $push
-					$push = data.$push,
-					
-					// $addToSet
-					$addToSet = data.$addToSet,
-					
-					// $pull
-					$pull = data.$pull,
-
-					// valid result
-					validResult,
-
-					// $inc valid result
-					$incValidResult,
-
-					// $push valid result
-					$pushValidResult,
-					
-					// $addToSet valid result
-					$addToSetValidResult,
-
-					// $pull valid result
-					$pullValidResult;
+					let validResult;
+					let $incValidResult;
+					let $pushValidResult;
+					let $addToSetValidResult;
+					let $pullValidResult;
 
 					// valid data.
 					if (updateValid !== undefined) {
@@ -808,13 +679,11 @@ FOR_BOX(function(box) {
 						
 						if ($push !== undefined) {
 							
-							$pushValidResult = updateValid.checkForUpdate(RUN(function() {
+							$pushValidResult = updateValid.checkForUpdate(RUN(() => {
 								
-								var
-								// data for valid
-								dataForValid = {};
+								let dataForValid = {};
 								
-								EACH($push, function(value, attr) {
+								EACH($push, (value, attr) => {
 									dataForValid[attr] = [value];
 								});
 								
@@ -824,13 +693,11 @@ FOR_BOX(function(box) {
 						
 						if ($addToSet !== undefined) {
 							
-							$addToSetValidResult = updateValid.checkForUpdate(RUN(function() {
+							$addToSetValidResult = updateValid.checkForUpdate(RUN(() => {
 								
-								var
-								// data for valid
-								dataForValid = {};
+								let dataForValid = {};
 								
-								EACH($addToSet, function(value, attr) {
+								EACH($addToSet, (value, attr) => {
 									dataForValid[attr] = [value];
 								});
 								
@@ -840,13 +707,11 @@ FOR_BOX(function(box) {
 						
 						if ($pull !== undefined) {
 							
-							$pullValidResult = updateValid.checkForUpdate(RUN(function() {
+							$pullValidResult = updateValid.checkForUpdate(RUN(() => {
 								
-								var
-								// data for valid
-								dataForValid = {};
+								let dataForValid = {};
 								
-								EACH($pull, function(value, attr) {
+								EACH($pull, (value, attr) => {
 									dataForValid[attr] = [value];
 								});
 								
@@ -884,14 +749,12 @@ FOR_BOX(function(box) {
 					else {
 
 						NEXT([
-						function(next) {
+						(next) => {
 										
-							var
-							// is not run next
-							isNotRunNext;
+							let isNotRunNext;
 
 							// run before update listeners.
-							EACH(beforeUpdateListeners, function(beforeUpdateListener) {
+							EACH(beforeUpdateListeners, (beforeUpdateListener) => {
 
 								if (beforeUpdateListener(data, next, ret, clientInfo) === false) {
 
@@ -904,34 +767,32 @@ FOR_BOX(function(box) {
 							}
 						},
 
-						function(next) {
-							return function() {
+						(next) => {
+							return () => {
 
 								// update data in database.
 								(isNotToUpdateLastUpdateTime === true ? db.updateNoRecord :
 								(isNotToSaveHistory === true ? db.updateNoHistory :
 								db.update))(data, {
 
-									error : function(errorMsg) {
+									error : (errorMsg) => {
 										ret({
 											errorMsg : errorMsg
 										});
 									},
 
-									notExists : function() {
+									notExists : () => {
 										ret({});
 									},
 
-									success : function(savedData, originData) {
+									success : (savedData, originData) => {
 										
-										var
-										// is not run next
-										isNotRunNext;
+										let isNotRunNext;
 										
 										// run after update listeners.
-										EACH(afterUpdateListeners, function(afterUpdateListener) {
+										EACH(afterUpdateListeners, (afterUpdateListener) => {
 			
-											if (afterUpdateListener(savedData, originData, function() {
+											if (afterUpdateListener(savedData, originData, () => {
 												next(savedData, originData);
 											}, ret, clientInfo) === false) {
 												
@@ -947,8 +808,8 @@ FOR_BOX(function(box) {
 							};
 						},
 						
-						function() {
-							return function(savedData, originData) {
+						() => {
+							return (savedData, originData) => {
 
 								// broadcast for watching.
 								box.BROADCAST({
@@ -966,17 +827,15 @@ FOR_BOX(function(box) {
 					}
 				};
 
-				innerRemove = function(id, ret, clientInfo) {
+				let innerRemove = (id, ret, clientInfo) => {
 					
 					NEXT([
-					function(next) {
+					(next) => {
 						
-						var
-						// is not run next
-						isNotRunNext;
+						let isNotRunNext;
 
 						// run before remove listeners.
-						EACH(beforeRemoveListeners, function(beforeRemoveListener) {
+						EACH(beforeRemoveListeners, (beforeRemoveListener) => {
 							
 							if (beforeRemoveListener(id, next, ret, clientInfo) === false) {
 								
@@ -989,32 +848,30 @@ FOR_BOX(function(box) {
 						}
 					},
 
-					function(next) {
-						return function() {
+					(next) => {
+						return () => {
 
 							// remove data in database.
 							db.remove(id, {
 
-								error : function(errorMsg) {
+								error : (errorMsg) => {
 									ret({
 										errorMsg : errorMsg
 									});
 								},
 
-								notExists : function() {
+								notExists : () => {
 									ret({});
 								},
 
-								success : function(originData) {
+								success : (originData) => {
 									
-									var
-									// is not run next
-									isNotRunNext;
+									let isNotRunNext;
 
 									// run after remove listeners.
-									EACH(afterRemoveListeners, function(afterRemoveListener) {
+									EACH(afterRemoveListeners, (afterRemoveListener) => {
 										
-										if (afterRemoveListener(originData, function() {
+										if (afterRemoveListener(originData, () => {
 											next(originData);
 										}, ret, clientInfo) === false) {
 											
@@ -1030,8 +887,8 @@ FOR_BOX(function(box) {
 						};
 					},
 						
-					function() {
-						return function(originData) {
+					() => {
+						return (originData) => {
 							
 							// broadcast for watching.
 							box.BROADCAST({
@@ -1048,7 +905,7 @@ FOR_BOX(function(box) {
 							});
 
 							// broadcast by property.
-							EACH(originData, function(value, propertyName) {
+							EACH(originData, (value, propertyName) => {
 								box.BROADCAST({
 									roomName : name + '/' + propertyName + '/' + value + '/remove',
 									methodName : 'remove',
@@ -1063,7 +920,7 @@ FOR_BOX(function(box) {
 					}]);
 				};
 
-				innerFind = function(params, ret, clientInfo) {
+				let innerFind = (params, ret, clientInfo) => {
 					//OPTIONAL: params
 					//OPTIONAL: params.filter
 					//OPTIONAL: params.sort
@@ -1073,24 +930,12 @@ FOR_BOX(function(box) {
 					//OPTIONAL: params.isToCache
 					//OPTIONAL: params.clientInfo
 
-					var
-					// filter
-					filter,
-
-					// sort
-					sort,
-
-					// start
-					start,
-
-					// count
-					count,
-
-					// is find all
-					isFindAll,
-					
-					// is to cache
-					isToCache;
+					let filter;
+					let sort;
+					let start;
+					let count;
+					let isFindAll;
+					let isToCache;
 
 					if (params !== undefined) {
 						filter = params.filter;
@@ -1105,25 +950,23 @@ FOR_BOX(function(box) {
 						}
 					}
 					
+					params = {
+						filter : filter,
+						sort : sort,
+						start : start,
+						count : count,
+						isFindAll : isFindAll,
+						isToCache : isToCache
+					};
+					
 					NEXT([
-					function(next) {
+					(next) => {
 						
-						var
-						// is not run next
-						isNotRunNext;
+						let isNotRunNext;
 
 						// run before find listeners.
-						EACH(beforeFindListeners, function(beforeFindListener) {
-							
-							if (beforeFindListener({
-								filter : filter,
-								sort : sort,
-								start : start,
-								count : count,
-								isFindAll : isFindAll,
-								isToCache : isToCache
-							}, next, ret, clientInfo) === false) {
-								
+						EACH(beforeFindListeners, (beforeFindListener) => {
+							if (beforeFindListener(params, next, ret, clientInfo) === false) {
 								isNotRunNext = true;
 							}
 						});
@@ -1133,35 +976,26 @@ FOR_BOX(function(box) {
 						}
 					},
 
-					function(next) {
-						return function() {
+					(next) => {
+						return () => {
 							
 							// find data set in database.
-							db.find({
-								filter : filter,
-								sort : sort,
-								start : start,
-								count : count,
-								isFindAll : isFindAll,
-								isToCache : isToCache
-							}, {
+							db.find(params, {
 		
-								error : function(errorMsg) {
+								error : (errorMsg) => {
 									ret({
 										errorMsg : errorMsg
 									});
 								},
 		
-								success : function(savedDataSet) {
+								success : (savedDataSet) => {
 							
-									var
-									// is not run next
-									isNotRunNext;
+									let isNotRunNext;
 		
 									// run after find listeners.
-									EACH(afterFindListeners, function(afterFindListener) {
+									EACH(afterFindListeners, (afterFindListener) => {
 		
-										if (afterFindListener(savedDataSet, function() {
+										if (afterFindListener(savedDataSet, () => {
 											next(savedDataSet);
 										}, ret, clientInfo) === false) {
 											
@@ -1177,8 +1011,8 @@ FOR_BOX(function(box) {
 						};
 					},
 					
-					function() {
-						return function(savedDataSet) {
+					() => {
+						return (savedDataSet) => {
 
 							ret({
 								savedDataSet : savedDataSet
@@ -1187,18 +1021,14 @@ FOR_BOX(function(box) {
 					}]);
 				};
 
-				innerCount = function(params, ret, clientInfo) {
+				let innerCount = (params, ret, clientInfo) => {
 					//OPTIONAL: params
 					//OPTIONAL: params.filter
 					//OPTIONAL: params.isToCache
 					//OPTIONAL: params.clientInfo
 
-					var
-					// filter
-					filter,
-					
-					// is to cache
-					isToCache;
+					let filter;
+					let isToCache;
 
 					if (params !== undefined) {
 						filter = params.filter;
@@ -1209,21 +1039,19 @@ FOR_BOX(function(box) {
 						}
 					}
 					
+					params = {
+						filter : filter,
+						isToCache : isToCache
+					};
+					
 					NEXT([
-					function(next) {
+					(next) => {
 						
-						var
-						// is not run next
-						isNotRunNext;
+						let isNotRunNext;
 
 						// run before count listeners.
-						EACH(beforeCountListeners, function(beforeCountListener) {
-							
-							if (beforeCountListener({
-								filter : filter,
-								isToCache : isToCache
-							}, next, ret, clientInfo) === false) {
-								
+						EACH(beforeCountListeners, (beforeCountListener) => {
+							if (beforeCountListener(params, next, ret, clientInfo) === false) {
 								isNotRunNext = true;
 							}
 						});
@@ -1233,31 +1061,26 @@ FOR_BOX(function(box) {
 						}
 					},
 
-					function(next) {
-						return function() {
+					(next) => {
+						return () => {
 							
 							// count data in database.
-							db.count({
-								filter : filter,
-								isToCache : isToCache
-							}, {
+							db.count(params, {
 		
-								error : function(errorMsg) {
+								error : (errorMsg) => {
 									ret({
 										errorMsg : errorMsg
 									});
 								},
 		
-								success : function(count) {
+								success : (count) => {
 									
-									var
-									// is not run next
-									isNotRunNext;
+									let isNotRunNext;
 		
 									// run after count listeners.
-									EACH(afterCountListeners, function(afterCountListener) {
+									EACH(afterCountListeners, (afterCountListener) => {
 										
-										if (afterCountListener(count, function() {
+										if (afterCountListener(count, () => {
 											next(count);
 										}, ret, clientInfo) === false) {
 											
@@ -1273,8 +1096,8 @@ FOR_BOX(function(box) {
 						};
 					},
 					
-					function() {
-						return function(count) {
+					() => {
+						return (count) => {
 
 							ret({
 								count : count
@@ -1283,18 +1106,14 @@ FOR_BOX(function(box) {
 					}]);
 				};
 
-				innerCheckIsExists = function(params, ret, clientInfo) {
+				let innerCheckIsExists = (params, ret, clientInfo) => {
 					//OPTIONAL: params
 					//OPTIONAL: params.filter
 					//OPTIONAL: params.isToCache
 					//OPTIONAL: params.clientInfo
 
-					var
-					// filter
-					filter,
-					
-					// is to cache
-					isToCache;
+					let filter;
+					let isToCache;
 
 					if (params !== undefined) {
 						filter = params.filter;
@@ -1305,21 +1124,19 @@ FOR_BOX(function(box) {
 						}
 					}
 					
+					params = {
+						filter : filter,
+						isToCache : isToCache
+					};
+					
 					NEXT([
-					function(next) {
+					(next) => {
 						
-						var
-						// is not run next
-						isNotRunNext;
+						let isNotRunNext;
 
 						// run before check is exists listeners.
-						EACH(beforeCheckIsExistsListeners, function(beforeCheckIsExistsListener) {
-							
-							if (beforeCheckIsExistsListener({
-								filter : filter,
-								isToCache : isToCache
-							}, next, ret, clientInfo) === false) {
-								
+						EACH(beforeCheckIsExistsListeners, (beforeCheckIsExistsListener) => {
+							if (beforeCheckIsExistsListener(params, next, ret, clientInfo) === false) {
 								isNotRunNext = true;
 							}
 						});
@@ -1329,31 +1146,26 @@ FOR_BOX(function(box) {
 						}
 					},
 
-					function(next) {
-						return function() {
+					(next) => {
+						return () => {
 						
 							// check is exists data in database.
-							db.checkIsExists({
-								filter : filter,
-								isToCache : isToCache
-							}, {
+							db.checkIsExists(params, {
 		
-								error : function(errorMsg) {
+								error : (errorMsg) => {
 									ret({
 										errorMsg : errorMsg
 									});
 								},
 		
-								success : function(isExists) {
+								success : (isExists) => {
 									
-									var
-									// is not run next
-									isNotRunNext;
+									let isNotRunNext;
 		
 									// run after check is exists listeners.
-									EACH(afterCheckIsExistsListeners, function(afterCheckIsExistsListener) {
+									EACH(afterCheckIsExistsListeners, (afterCheckIsExistsListener) => {
 		
-										if (afterCheckIsExistsListener(isExists, function() {
+										if (afterCheckIsExistsListener(isExists, () => {
 											next(isExists);
 										}, ret, clientInfo) === false) {
 											
@@ -1369,8 +1181,8 @@ FOR_BOX(function(box) {
 						};
 					},
 					
-					function() {
-						return function(isExists) {
+					() => {
+						return (isExists) => {
 
 							ret({
 								isExists : isExists
@@ -1379,41 +1191,32 @@ FOR_BOX(function(box) {
 					}]);
 				};
 
-				self.create = create = function(data, callbackOrHandlers) {
+				let create = self.create = (data, callbackOrHandlers) => {
 					//REQUIRED: data
 					//OPTIONAL: callbackOrHandlers
+					//OPTIONAL: callbackOrHandlers.error
+					//OPTIONAL: callbackOrHandlers.notValid
+					//OPTIONAL: callbackOrHandlers.success
 
-					var
-					// callback.
-					callback,
-
-					// not valid handler.
-					notValidHandler,
-
-					// error handler.
-					errorHandler;
+					let errorHandler;
+					let notValidHandler;
+					let callback;
 
 					if (callbackOrHandlers !== undefined) {
 						if (CHECK_IS_DATA(callbackOrHandlers) !== true) {
 							callback = callbackOrHandlers;
 						} else {
-							callback = callbackOrHandlers.success;
-							notValidHandler = callbackOrHandlers.notValid;
 							errorHandler = callbackOrHandlers.error;
+							notValidHandler = callbackOrHandlers.notValid;
+							callback = callbackOrHandlers.success;
 						}
 					}
 
-					innerCreate(data, function(result) {
+					innerCreate(data, (result) => {
 
-						var
-						// error msg
-						errorMsg,
-
-						// valid errors
-						validErrors,
-
-						// saved data
-						savedData;
+						let errorMsg;
+						let validErrors;
+						let savedData;
 
 						if (result !== undefined) {
 
@@ -1425,13 +1228,18 @@ FOR_BOX(function(box) {
 								if (errorHandler !== undefined) {
 									errorHandler(errorMsg);
 								} else {
-									SHOW_ERROR('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.create` ERROR: ' + errorMsg);
+									SHOW_ERROR(box.boxName + '.' + name + 'Model.create', errorMsg);
 								}
 							} else if (validErrors !== undefined) {
 								if (notValidHandler !== undefined) {
 									notValidHandler(validErrors);
 								} else {
-									console.log(CONSOLE_YELLOW('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.create` NOT VALID.'), validErrors);
+									SHOW_WARNING(box.boxName + '.' + name + 'Model.create', MSG({
+										ko : '데이터가 유효하지 않습니다.'
+									}), {
+										data : data,
+										validErrors : validErrors
+									});
 								}
 							} else if (callback !== undefined) {
 								callback(savedData);
@@ -1443,7 +1251,7 @@ FOR_BOX(function(box) {
 					});
 				};
 
-				self.get = get = function(idOrParams, callbackOrHandlers) {
+				let get = self.get = (idOrParams, callbackOrHandlers) => {
 					//OPTIONAL: idOrParams
 					//OPTIONAL: idOrParams.id
 					//OPTIONAL: idOrParams.filter
@@ -1452,16 +1260,13 @@ FOR_BOX(function(box) {
 					//OPTIONAL: idOrParams.isToCache
 					//OPTIONAL: idOrParams.clientInfo
 					//REQUIRED: callbackOrHandlers
+					//OPTIONAL: callbackOrHandlers.error
+					//OPTIONAL: callbackOrHandlers.notExists
+					//OPTIONAL: callbackOrHandlers.success
 
-					var
-					// callback.
-					callback,
-
-					// not exists handler.
-					notExistsHandler,
-
-					// error handler.
-					errorHandler;
+					let errorHandler;
+					let notExistsHandler;
+					let callback;
 					
 					// init params.
 					if (callbackOrHandlers === undefined) {
@@ -1472,19 +1277,15 @@ FOR_BOX(function(box) {
 					if (CHECK_IS_DATA(callbackOrHandlers) !== true) {
 						callback = callbackOrHandlers;
 					} else {
-						callback = callbackOrHandlers.success;
-						notExistsHandler = callbackOrHandlers.notExists;
 						errorHandler = callbackOrHandlers.error;
+						notExistsHandler = callbackOrHandlers.notExists;
+						callback = callbackOrHandlers.success;
 					}
 
-					innerGet(idOrParams, function(result) {
+					innerGet(idOrParams, (result) => {
 
-						var
-						// error msg
-						errorMsg,
-
-						// saved data
-						savedData;
+						let errorMsg;
+						let savedData;
 
 						if (result !== undefined) {
 							errorMsg = result.errorMsg;
@@ -1495,13 +1296,15 @@ FOR_BOX(function(box) {
 							if (errorHandler !== undefined) {
 								errorHandler(errorMsg);
 							} else {
-								SHOW_ERROR('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.get` ERROR: ' + errorMsg);
+								SHOW_ERROR(box.boxName + '.' + name + 'Model.get', errorMsg);
 							}
 						} else if (savedData === undefined) {
 							if (notExistsHandler !== undefined) {
 								notExistsHandler();
 							} else {
-								console.log(CONSOLE_YELLOW('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.get` NOT EXISTS.'), idOrParams);
+								SHOW_WARNING(box.boxName + '.' + name + 'Model.get', MSG({
+									ko : '데이터가 존재하지 않습니다.'
+								}), idOrParams);
 							}
 						} else if (callback !== undefined) {
 							callback(savedData);
@@ -1509,49 +1312,37 @@ FOR_BOX(function(box) {
 					});
 				};
 
-				self.update = update = function(data, callbackOrHandlers) {
+				let update = self.update = (data, callbackOrHandlers) => {
 					//REQUIRED: data
 					//REQUIRED: data.id
 					//OPTIONAL: callbackOrHandlers
+					//OPTIONAL: callbackOrHandlers.error
+					//OPTIONAL: callbackOrHandlers.notValid
+					//OPTIONAL: callbackOrHandlers.notExists
+					//OPTIONAL: callbackOrHandlers.success
 
-					var
-					// callback.
-					callback,
-
-					// not exists handler.
-					notExistsHandler,
-
-					// not valid handler.
-					notValidHandler,
-
-					// error handler.
-					errorHandler;
+					let errorHandler;
+					let notValidHandler;
+					let notExistsHandler;
+					let callback;
 
 					if (callbackOrHandlers !== undefined) {
 						if (CHECK_IS_DATA(callbackOrHandlers) !== true) {
 							callback = callbackOrHandlers;
 						} else {
-							callback = callbackOrHandlers.success;
-							notExistsHandler = callbackOrHandlers.notExists;
-							notValidHandler = callbackOrHandlers.notValid;
 							errorHandler = callbackOrHandlers.error;
+							notValidHandler = callbackOrHandlers.notValid;
+							notExistsHandler = callbackOrHandlers.notExists;
+							callback = callbackOrHandlers.success;
 						}
 					}
 
-					innerUpdate(data, function(result) {
+					innerUpdate(data, (result) => {
 
-						var
-						// error msg
-						errorMsg,
-
-						// valid errors
-						validErrors,
-
-						// saved data
-						savedData,
-						
-						// origin data
-						originData;
+						let errorMsg;
+						let validErrors;
+						let savedData;
+						let originData;
 
 						if (result !== undefined) {
 							errorMsg = result.errorMsg;
@@ -1564,19 +1355,26 @@ FOR_BOX(function(box) {
 							if (errorHandler !== undefined) {
 								errorHandler(errorMsg);
 							} else {
-								SHOW_ERROR('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.update` ERROR: ' + errorMsg);
+								SHOW_ERROR(box.boxName + '.' + name + 'Model.update', errorMsg);
 							}
 						} else if (validErrors !== undefined) {
 							if (notValidHandler !== undefined) {
 								notValidHandler(validErrors);
 							} else {
-								console.log(CONSOLE_YELLOW('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.update` NOT VALID.'), validErrors);
+								SHOW_WARNING(box.boxName + '.' + name + 'Model.update', MSG({
+									ko : '데이터가 유효하지 않습니다.'
+								}), {
+									data : data,
+									validErrors : validErrors
+								});
 							}
 						} else if (savedData === undefined) {
 							if (notExistsHandler !== undefined) {
 								notExistsHandler();
 							} else {
-								console.log(CONSOLE_YELLOW('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.update` NOT EXISTS.'), data);
+								SHOW_WARNING(box.boxName + '.' + name + 'Model.update', MSG({
+									ko : '수정할 데이터가 존재하지 않습니다.'
+								}), data);
 							}
 						} else if (callback !== undefined) {
 							callback(savedData, originData);
@@ -1584,49 +1382,37 @@ FOR_BOX(function(box) {
 					});
 				};
 				
-				self.updateNoHistory = updateNoHistory = function(data, callbackOrHandlers) {
+				let updateNoHistory = self.updateNoHistory = (data, callbackOrHandlers) => {
 					//REQUIRED: data
 					//REQUIRED: data.id
 					//OPTIONAL: callbackOrHandlers
+					//OPTIONAL: callbackOrHandlers.error
+					//OPTIONAL: callbackOrHandlers.notValid
+					//OPTIONAL: callbackOrHandlers.notExists
+					//OPTIONAL: callbackOrHandlers.success
 
-					var
-					// callback.
-					callback,
-
-					// not exists handler.
-					notExistsHandler,
-
-					// not valid handler.
-					notValidHandler,
-
-					// error handler.
-					errorHandler;
+					let errorHandler;
+					let notValidHandler;
+					let notExistsHandler;
+					let callback;
 
 					if (callbackOrHandlers !== undefined) {
 						if (CHECK_IS_DATA(callbackOrHandlers) !== true) {
 							callback = callbackOrHandlers;
 						} else {
-							callback = callbackOrHandlers.success;
-							notExistsHandler = callbackOrHandlers.notExists;
-							notValidHandler = callbackOrHandlers.notValid;
 							errorHandler = callbackOrHandlers.error;
+							notValidHandler = callbackOrHandlers.notValid;
+							notExistsHandler = callbackOrHandlers.notExists;
+							callback = callbackOrHandlers.success;
 						}
 					}
 
-					innerUpdate(data, function(result) {
+					innerUpdate(data, (result) => {
 
-						var
-						// error msg
-						errorMsg,
-
-						// valid errors
-						validErrors,
-
-						// saved data
-						savedData,
-						
-						// origin data
-						originData;
+						let errorMsg;
+						let validErrors;
+						let savedData;
+						let originData;
 
 						if (result !== undefined) {
 							errorMsg = result.errorMsg;
@@ -1639,19 +1425,26 @@ FOR_BOX(function(box) {
 							if (errorHandler !== undefined) {
 								errorHandler(errorMsg);
 							} else {
-								SHOW_ERROR('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.update` ERROR: ' + errorMsg);
+								SHOW_ERROR(box.boxName + '.' + name + 'Model.update', errorMsg);
 							}
 						} else if (validErrors !== undefined) {
 							if (notValidHandler !== undefined) {
 								notValidHandler(validErrors);
 							} else {
-								console.log(CONSOLE_YELLOW('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.update` NOT VALID.'), validErrors);
+								SHOW_WARNING(box.boxName + '.' + name + 'Model.update', MSG({
+									ko : '데이터가 유효하지 않습니다.'
+								}), {
+									data : data,
+									validErrors : validErrors
+								});
 							}
 						} else if (savedData === undefined) {
 							if (notExistsHandler !== undefined) {
 								notExistsHandler();
 							} else {
-								console.log(CONSOLE_YELLOW('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.update` NOT EXISTS.'), data);
+								SHOW_WARNING(box.boxName + '.' + name + 'Model.update', MSG({
+									ko : '수정할 데이터가 존재하지 않습니다.'
+								}), data);
 							}
 						} else if (callback !== undefined) {
 							callback(savedData, originData);
@@ -1660,49 +1453,37 @@ FOR_BOX(function(box) {
 					}, undefined, true);
 				};
 				
-				self.updateNoRecord = updateNoRecord = function(data, callbackOrHandlers) {
+				let updateNoRecord = self.updateNoRecord = (data, callbackOrHandlers) => {
 					//REQUIRED: data
 					//REQUIRED: data.id
 					//OPTIONAL: callbackOrHandlers
+					//OPTIONAL: callbackOrHandlers.error
+					//OPTIONAL: callbackOrHandlers.notValid
+					//OPTIONAL: callbackOrHandlers.notExists
+					//OPTIONAL: callbackOrHandlers.success
 
-					var
-					// callback.
-					callback,
-
-					// not exists handler.
-					notExistsHandler,
-
-					// not valid handler.
-					notValidHandler,
-
-					// error handler.
-					errorHandler;
+					let errorHandler;
+					let notValidHandler;
+					let notExistsHandler;
+					let callback;
 
 					if (callbackOrHandlers !== undefined) {
 						if (CHECK_IS_DATA(callbackOrHandlers) !== true) {
 							callback = callbackOrHandlers;
 						} else {
-							callback = callbackOrHandlers.success;
-							notExistsHandler = callbackOrHandlers.notExists;
-							notValidHandler = callbackOrHandlers.notValid;
 							errorHandler = callbackOrHandlers.error;
+							notValidHandler = callbackOrHandlers.notValid;
+							notExistsHandler = callbackOrHandlers.notExists;
+							callback = callbackOrHandlers.success;
 						}
 					}
 
-					innerUpdate(data, function(result) {
+					innerUpdate(data, (result) => {
 
-						var
-						// error msg
-						errorMsg,
-
-						// valid errors
-						validErrors,
-
-						// saved data
-						savedData,
-						
-						// origin data
-						originData;
+						let errorMsg;
+						let validErrors;
+						let savedData;
+						let originData;
 
 						if (result !== undefined) {
 							errorMsg = result.errorMsg;
@@ -1715,19 +1496,26 @@ FOR_BOX(function(box) {
 							if (errorHandler !== undefined) {
 								errorHandler(errorMsg);
 							} else {
-								SHOW_ERROR('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.update` ERROR: ' + errorMsg);
+								SHOW_ERROR(box.boxName + '.' + name + 'Model.update', errorMsg);
 							}
 						} else if (validErrors !== undefined) {
 							if (notValidHandler !== undefined) {
 								notValidHandler(validErrors);
 							} else {
-								console.log(CONSOLE_YELLOW('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.update` NOT VALID.'), validErrors);
+								SHOW_WARNING(box.boxName + '.' + name + 'Model.update', MSG({
+									ko : '데이터가 유효하지 않습니다.'
+								}), {
+									data : data,
+									validErrors : validErrors
+								});
 							}
 						} else if (savedData === undefined) {
 							if (notExistsHandler !== undefined) {
 								notExistsHandler();
 							} else {
-								console.log(CONSOLE_YELLOW('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.update` NOT EXISTS.'), data);
+								SHOW_WARNING(box.boxName + '.' + name + 'Model.update', MSG({
+									ko : '수정할 데이터가 존재하지 않습니다.'
+								}), data);
 							}
 						} else if (callback !== undefined) {
 							callback(savedData, originData);
@@ -1736,38 +1524,31 @@ FOR_BOX(function(box) {
 					}, undefined, true, true);
 				};
 				
-				self.remove = remove = function(id, callbackOrHandlers) {
+				let remove = self.remove = (id, callbackOrHandlers) => {
 					//REQUIRED: id
 					//OPTIONAL: callbackOrHandlers
+					//OPTIONAL: callbackOrHandlers.error
+					//OPTIONAL: callbackOrHandlers.notExists
+					//OPTIONAL: callbackOrHandlers.success
 
-					var
-					// callback.
-					callback,
-
-					// not exists handler.
-					notExistsHandler,
-
-					// error handler.
-					errorHandler;
+					let errorHandler;
+					let notExistsHandler;
+					let callback;
 
 					if (callbackOrHandlers !== undefined) {
 						if (CHECK_IS_DATA(callbackOrHandlers) !== true) {
 							callback = callbackOrHandlers;
 						} else {
-							callback = callbackOrHandlers.success;
-							notExistsHandler = callbackOrHandlers.notExists;
 							errorHandler = callbackOrHandlers.error;
+							notExistsHandler = callbackOrHandlers.notExists;
+							callback = callbackOrHandlers.success;
 						}
 					}
 
-					innerRemove(id, function(result) {
+					innerRemove(id, (result) => {
 
-						var
-						// error msg
-						errorMsg,
-
-						// origin data
-						originData;
+						let errorMsg;
+						let originData;
 
 						if (result !== undefined) {
 							errorMsg = result.errorMsg;
@@ -1778,13 +1559,15 @@ FOR_BOX(function(box) {
 							if (errorHandler !== undefined) {
 								errorHandler(errorMsg);
 							} else {
-								SHOW_ERROR('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.remove` ERROR: ' + errorMsg);
+								SHOW_ERROR(box.boxName + '.' + name + 'Model.remove', errorMsg);
 							}
 						} else if (originData === undefined) {
 							if (notExistsHandler !== undefined) {
 								notExistsHandler();
 							} else {
-								console.log(CONSOLE_YELLOW('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.remove` NOT EXISTS.'), id);
+								SHOW_WARNING(box.boxName + '.' + name + 'Model.remove', MSG({
+									ko : '삭제할 데이터가 존재하지 않습니다.'
+								}), id);
 							}
 						} else if (callback !== undefined) {
 							callback(originData);
@@ -1792,7 +1575,7 @@ FOR_BOX(function(box) {
 					});
 				};
 
-				self.find = find = function(params, callbackOrHandlers) {
+				let find = self.find = (params, callbackOrHandlers) => {
 					//OPTIONAL: params
 					//OPTIONAL: params.filter
 					//OPTIONAL: params.sort
@@ -1801,13 +1584,11 @@ FOR_BOX(function(box) {
 					//OPTIONAL: params.isFindAll
 					//OPTIONAL: params.isToCache
 					//REQUIRED: callbackOrHandlers
+					//OPTIONAL: callbackOrHandlers.error
+					//REQUIRED: callbackOrHandlers.success
 
-					var
-					// callback.
-					callback,
-
-					// error handler.
-					errorHandler;
+					let errorHandler;
+					let callback;
 
 					// init params.
 					if (callbackOrHandlers === undefined) {
@@ -1819,25 +1600,21 @@ FOR_BOX(function(box) {
 						if (CHECK_IS_DATA(callbackOrHandlers) !== true) {
 							callback = callbackOrHandlers;
 						} else {
-							callback = callbackOrHandlers.success;
 							errorHandler = callbackOrHandlers.error;
+							callback = callbackOrHandlers.success;
 						}
 					}
 
-					innerFind(params, function(result) {
+					innerFind(params, (result) => {
 
-						var
-						// error msg
-						errorMsg = result.errorMsg,
-
-						// saved data set
-						savedDataSet = result.savedDataSet;
+						let errorMsg = result.errorMsg;
+						let savedDataSet = result.savedDataSet;
 
 						if (errorMsg !== undefined) {
 							if (errorHandler !== undefined) {
 								errorHandler(errorMsg);
 							} else {
-								SHOW_ERROR('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.find` ERROR: ' + errorMsg);
+								SHOW_ERROR(box.boxName + '.' + name + 'Model.find', errorMsg);
 							}
 						} else {
 							callback(savedDataSet);
@@ -1845,18 +1622,16 @@ FOR_BOX(function(box) {
 					});
 				};
 
-				self.count = count = function(params, callbackOrHandlers) {
+				let count = self.count = (params, callbackOrHandlers) => {
 					//OPTIONAL: params
 					//OPTIONAL: params.filter
 					//OPTIONAL: params.isToCache
 					//REQUIRED: callbackOrHandlers
+					//OPTIONAL: callbackOrHandlers.error
+					//REQUIRED: callbackOrHandlers.success
 
-					var
-					// callback.
-					callback,
-
-					// error handler.
-					errorHandler;
+					let errorHandler;
+					let callback;
 
 					// init params.
 					if (callbackOrHandlers === undefined) {
@@ -1868,25 +1643,21 @@ FOR_BOX(function(box) {
 						if (CHECK_IS_DATA(callbackOrHandlers) !== true) {
 							callback = callbackOrHandlers;
 						} else {
-							callback = callbackOrHandlers.success;
 							errorHandler = callbackOrHandlers.error;
+							callback = callbackOrHandlers.success;
 						}
 					}
 
-					innerCount(params, function(result) {
+					innerCount(params, (result) => {
 
-						var
-						// error msg
-						errorMsg = result.errorMsg,
-
-						// count
-						count = result.count;
+						let errorMsg = result.errorMsg;
+						let count = result.count;
 
 						if (errorMsg !== undefined) {
 							if (errorHandler !== undefined) {
 								errorHandler(errorMsg);
 							} else {
-								SHOW_ERROR('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.count` ERROR: ' + errorMsg);
+								SHOW_ERROR(box.boxName + '.' + name + 'Model.count', errorMsg);
 							}
 						} else {
 							callback(count);
@@ -1894,18 +1665,16 @@ FOR_BOX(function(box) {
 					});
 				};
 
-				self.checkIsExists = checkIsExists = function(params, callbackOrHandlers) {
+				let checkIsExists = self.checkIsExists = (params, callbackOrHandlers) => {
 					//OPTIONAL: params
 					//OPTIONAL: params.filter
 					//OPTIONAL: params.isToCache
 					//REQUIRED: callbackOrHandlers
+					//OPTIONAL: callbackOrHandlers.error
+					//REQUIRED: callbackOrHandlers.success
 
-					var
-					// callback.
-					callback,
-
-					// error handler.
-					errorHandler;
+					let errorHandler;
+					let callback;
 
 					// init params.
 					if (callbackOrHandlers === undefined) {
@@ -1917,25 +1686,21 @@ FOR_BOX(function(box) {
 						if (CHECK_IS_DATA(callbackOrHandlers) !== true) {
 							callback = callbackOrHandlers;
 						} else {
-							callback = callbackOrHandlers.success;
 							errorHandler = callbackOrHandlers.error;
+							callback = callbackOrHandlers.success;
 						}
 					}
 
-					innerCheckIsExists(params, function(result) {
+					innerCheckIsExists(params, (result) => {
 
-						var
-						// error msg
-						errorMsg = result.errorMsg,
-
-						// is exists
-						isExists = result.isExists;
+						let errorMsg = result.errorMsg;
+						let isExists = result.isExists;
 
 						if (errorMsg !== undefined) {
 							if (errorHandler !== undefined) {
 								errorHandler(errorMsg);
 							} else {
-								SHOW_ERROR('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.checkIsExists` ERROR: ' + errorMsg);
+								SHOW_ERROR(box.boxName + '.' + name + 'Model.checkIsExists', errorMsg);
 							}
 						} else {
 							callback(isExists);
@@ -1944,13 +1709,13 @@ FOR_BOX(function(box) {
 				};
 
 				// init room for create, get, find.
-				box.ROOM(name, function(clientInfo, on) {
+				box.ROOM(name, (clientInfo, on) => {
 
 					// init create.
 					if (createConfig !== false) {
 
 						// on create.
-						on('create', function(data, ret) {
+						on('create', (data, ret) => {
 							
 							// ignore undefined data attack.
 							if (data !== undefined) {
@@ -1988,7 +1753,7 @@ FOR_BOX(function(box) {
 					if (getConfig !== false) {
 
 						// on get.
-						on('get', function(idOrParams, ret) {
+						on('get', (idOrParams, ret) => {
 						
 							if (getRole === undefined || (clientInfo.roles !== undefined && CHECK_IS_IN({
 								array : clientInfo.roles,
@@ -2016,7 +1781,7 @@ FOR_BOX(function(box) {
 					if (updateConfig !== false) {
 
 						// on update.
-						on('update', function(data, ret) {
+						on('update', (data, ret) => {
 							
 							// ignore undefined data attack.
 							if (data !== undefined) {
@@ -2038,17 +1803,17 @@ FOR_BOX(function(box) {
 										// get data in database.
 										db.get(data.id, {
 	
-											error : function(errorMsg) {
+											error : (errorMsg) => {
 												ret({
 													errorMsg : errorMsg
 												});
 											},
 	
-											notExists : function() {
+											notExists : () => {
 												ret({});
 											},
 	
-											success : function(savedData) {
+											success : (savedData) => {
 												
 												// check auth key.
 												if (savedData[updateAuthKey] === clientInfo.authKey) {
@@ -2086,7 +1851,7 @@ FOR_BOX(function(box) {
 					if (removeConfig !== false) {
 
 						// on remove.
-						on('remove', function(id, ret) {
+						on('remove', (id, ret) => {
 							
 							// ignore undefined data attack.
 							if (id !== undefined) {
@@ -2108,17 +1873,17 @@ FOR_BOX(function(box) {
 										// get data in database.
 										db.get(id, {
 	
-											error : function(errorMsg) {
+											error : (errorMsg) => {
 												ret({
 													errorMsg : errorMsg
 												});
 											},
 	
-											notExists : function() {
+											notExists : () => {
 												ret({});
 											},
 	
-											success : function(savedData) {
+											success : (savedData) => {
 	
 												// check auth key.
 												if (savedData[removeAuthKey] === clientInfo.authKey) {
@@ -2135,7 +1900,7 @@ FOR_BOX(function(box) {
 										});
 	
 									} else if (removeAuthKey === undefined && removeAdminRole !== undefined) {
-	
+
 										if (clientInfo.roles !== undefined && CHECK_IS_IN({
 											array : clientInfo.roles,
 											value : removeAdminRole
@@ -2168,7 +1933,7 @@ FOR_BOX(function(box) {
 					if (findConfig !== false) {
 
 						// on find.
-						on('find', function(params, ret) {
+						on('find', (params, ret) => {
 
 							if (findRole === undefined || (clientInfo.roles !== undefined && CHECK_IS_IN({
 								array : clientInfo.roles,
@@ -2197,7 +1962,7 @@ FOR_BOX(function(box) {
 					if (countConfig !== false) {
 
 						// on count.
-						on('count', function(params, ret) {
+						on('count', (params, ret) => {
 
 							if (countRole === undefined || (clientInfo.roles !== undefined && CHECK_IS_IN({
 								array : clientInfo.roles,
@@ -2225,7 +1990,7 @@ FOR_BOX(function(box) {
 					if (checkIsExistsConfig !== false) {
 
 						// on check is exists.
-						on('checkIsExists', function(params, ret) {
+						on('checkIsExists', (params, ret) => {
 							
 							if (checkIsExistsRole === undefined || (clientInfo.roles !== undefined && CHECK_IS_IN({
 								array : clientInfo.roles,

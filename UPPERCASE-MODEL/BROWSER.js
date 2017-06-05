@@ -1,26 +1,47 @@
 /*
 
-Welcome to UPPERCASE! (http://uppercase.io)
+Welcome to UPPERCASE-MODEL! (http://uppercase.io)
 
 */
 
-FOR_BOX(function(box) {'use strict';
+FOR_BOX((box) => {
 
-	/**
-	 * Model(include CRUD functions) interface
+	/*
+	 * MODEL 클래스
 	 */
 	box.MODEL = CLASS({
 
-		init : function(inner, self, params) {
+		init : (inner, self, params) => {
 			//REQUIRED: params
 			//REQUIRED: params.name
-			//OPTIONAL: params.config
+			//OPTIONAL: params.initData
+			//OPTIONAL: params.methodConfig
+			//OPTIONAL: params.methodConfig.create
+			//OPTIONAL: params.methodConfig.create.valid
+			//OPTIONAL: params.methodConfig.create.role
+			//OPTIONAL: params.methodConfig.create.authKey
+			//OPTIONAL: params.methodConfig.create.adminRole
+			//OPTIONAL: params.methodConfig.get
+			//OPTIONAL: params.methodConfig.get.role
+			//OPTIONAL: params.methodConfig.update
+			//OPTIONAL: params.methodConfig.update.valid
+			//OPTIONAL: params.methodConfig.update.role
+			//OPTIONAL: params.methodConfig.update.authKey
+			//OPTIONAL: params.methodConfig.update.adminRole
+			//OPTIONAL: params.methodConfig.remove
+			//OPTIONAL: params.methodConfig.remove.role
+			//OPTIONAL: params.methodConfig.remove.authKey
+			//OPTIONAL: params.methodConfig.remove.adminRole
+			//OPTIONAL: params.methodConfig.find
+			//OPTIONAL: params.methodConfig.find.role
+			//OPTIONAL: params.methodConfig.count
+			//OPTIONAL: params.methodConfig.count.role
+			//OPTIONAL: params.methodConfig.checkIsExists
+			//OPTIONAL: params.methodConfig.checkIsExists.role
+			//OPTIONAL: params.isNotUsingObjectId
+			//OPTIONAL: params.isNotUsingHistory
 			
-			var
-			// get box name.
-			getBoxName;
-			
-			self.getBoxName = getBoxName = function() {
+			let getBoxName = self.getBoxName = () => {
 				return box.boxName;
 			};
 
@@ -29,152 +50,79 @@ FOR_BOX(function(box) {'use strict';
 	});
 });
 
-FOR_BOX(function(box) {
-	'use strict';
+FOR_BOX((box) => {
 	
-	OVERRIDE(box.MODEL, function(origin) {
+	OVERRIDE(box.MODEL, (origin) => {
 
-		/**
-		 * Model(include CRUD functions) class
+		/*
+		 * MODEL 클래스
 		 */
-		box.MODEL = CLASS(function(cls) {
+		box.MODEL = CLASS((cls) => {
 			
-			var
-			// on new infos
-			onNewInfos = {},
+			let onNewInfos = {};
+			let onNewInfoCount = 0;
 			
-			// on new info count
-			onNewInfoCount = 0,
-			
-			// get on new infos.
-			getOnNewInfos;
-			
-			cls.getOnNewInfos = getOnNewInfos = function() {
+			let getOnNewInfos = cls.getOnNewInfos = () => {
 				return onNewInfos;
 			};
 			
 			return {
 				
-				preset : function() {
+				preset : () => {
 					return origin;
 				},
-		
-				init : function(inner, self, params) {
+				
+				init : (inner, self, params) => {
 					//REQUIRED: params
 					//OPTIONAL: params.roomServerName
 					//REQUIRED: params.name
 					//OPTIONAL: params.initData
 					//OPTIONAL: params.methodConfig
+					//OPTIONAL: params.methodConfig.create
+					//OPTIONAL: params.methodConfig.create.valid
+					//OPTIONAL: params.methodConfig.get
+					//OPTIONAL: params.methodConfig.update
+					//OPTIONAL: params.methodConfig.update.valid
+					//OPTIONAL: params.methodConfig.remove
+					//OPTIONAL: params.methodConfig.find
+					//OPTIONAL: params.methodConfig.count
+					//OPTIONAL: params.methodConfig.checkIsExists
 					//OPTIONAL: params.isNotUsingObjectId
-		
-					var
-					// room server name
-					roomServerName = params.roomServerName,
 					
-					// name
-					name = params.name,
-		
-					// init data.
-					initData = params.initData,
-		
-					// method config
-					methodConfig = params.methodConfig,
+					let roomServerName = params.roomServerName;
+					let name = params.name;
+					let initData = params.initData;
+					let methodConfig = params.methodConfig;
+					let isNotUsingObjectId = params.isNotUsingObjectId;
 					
-					// is not using object id
-					isNotUsingObjectId = params.isNotUsingObjectId,
-		
-					// create config
-					createConfig,
-		
-					// get config
-					getConfig,
-		
-					// update config
-					updateConfig,
-		
-					// remove config
-					removeConfig,
-		
-					// find config
-					findConfig,
-		
-					// count conifg
-					countConfig,
-		
-					// check is exists conifg
-					checkIsExistsConfig,
-		
-					// create valid
-					createValid,
-		
-					// update valid
-					updateValid,
-		
-					// is _id assignable
-					is_idAssignable,
-		
-					// room
-					room = box.ROOM({
+					let createConfig;
+					let getConfig;
+					let updateConfig;
+					let removeConfig;
+					let findConfig;
+					let countConfig;
+					let checkIsExistsConfig;
+					
+					let createValid;
+					let updateValid;
+					let is_idAssignable;
+					
+					let room = box.ROOM({
 						roomServerName : roomServerName,
 						name : name
-					}),
-		
-					// get name.
-					getName,
-		
-					// get init data.
-					getInitData,
-		
-					// get create valid.
-					getCreateValid,
-		
-					// get update valid.
-					getUpdateValid,
-		
-					// get room.
-					getRoom,
-		
-					// create.
-					create,
-		
-					// get.
-					get,
-		
-					// get watching.
-					getWatching,
-		
-					// update.
-					update,
-		
-					// remove.
-					remove,
-		
-					// find.
-					find,
-		
-					// find watching.
-					findWatching,
-		
-					// count.
-					count,
-		
-					// check is exists.
-					checkIsExists,
-		
-					// on new.
-					onNew,
-		
-					// on new watching.
-					onNewWatching,
+					});
 					
-					// on new and find.
-					onNewAndFind,
-		
-					// on new and find watching.
-					onNewAndFindWatching,
-		
-					// on remove.
-					onRemove;
+					let create;
+					let get;
+					let getWatching;
+					let update;
+					let remove;
+					let find;
+					let findWatching;
+					let count;
+					let checkIsExists;
+					let onNewAndFind;
+					let onNewAndFindWatching;
 		
 					// init method config.
 					if (methodConfig !== undefined) {
@@ -196,73 +144,64 @@ FOR_BOX(function(box) {
 						}
 					}
 		
-					self.getName = getName = function() {
+					let getName = self.getName = () => {
 						return name;
 					};
 		
-					self.getInitData = getInitData = function() {
+					let getInitData = self.getInitData = () => {
 						return initData;
 					};
 		
-					self.getCreateValid = getCreateValid = function() {
+					let getCreateValid = self.getCreateValid = () => {
 						return createValid;
 					};
 		
-					self.getUpdateValid = getUpdateValid = function() {
+					let getUpdateValid = self.getUpdateValid = () => {
 						return updateValid;
 					};
 		
-					self.getRoom = getRoom = function() {
+					let getRoom = self.getRoom = () => {
 						return room;
 					};
 		
 					// create.
 					if (createConfig !== false) {
 		
-						self.create = create = function(data, callbackOrHandlers) {
+						create = self.create = (data, callbackOrHandlers) => {
 							//REQUIRED: data
 							//OPTIONAL: callbackOrHandlers
-							//OPTIONAL: callbackOrHandlers.success
+							//OPTIONAL: callbackOrHandlers.error
 							//OPTIONAL: callbackOrHandlers.notValid
 							//OPTIONAL: callbackOrHandlers.notAuthed
-							//OPTIONAL: callbackOrHandlers.error
-		
-							var
-							// callback.
-							callback,
-		
-							// not valid handler.
-							notValidHandler,
-		
-							// not valid handler.
-							notAuthedHandler,
-		
-							// error handler.
-							errorHandler,
-		
-							// valid result
-							validResult;
+							//OPTIONAL: callbackOrHandlers.success
+							
+							let errorHandler;
+							let notValidHandler;
+							let notAuthedHandler;
+							let callback;
+							
+							let validResult;
 		
 							if (callbackOrHandlers !== undefined) {
 								if (CHECK_IS_DATA(callbackOrHandlers) !== true) {
 									callback = callbackOrHandlers;
 								} else {
-									callback = callbackOrHandlers.success;
+									errorHandler = callbackOrHandlers.error;
 									notValidHandler = callbackOrHandlers.notValid;
 									notAuthedHandler = callbackOrHandlers.notAuthed;
-									errorHandler = callbackOrHandlers.error;
+									callback = callbackOrHandlers.success;
 								}
 							}
 		
 							// init data.
 							if (initData !== undefined) {
-								EACH(initData, function(value, name) {
+								EACH(initData, (value, name) => {
 									data[name] = value;
 								});
 							}
 		
 							if (createValid !== undefined) {
-								validResult = createValid.check(data);
+								validResult = createValid.checkAndWash(data);
 							}
 		
 							if (validResult !== undefined && validResult.checkHasError() === true) {
@@ -270,7 +209,12 @@ FOR_BOX(function(box) {
 								if (notValidHandler !== undefined) {
 									notValidHandler(validResult.getErrors());
 								} else {
-									console.log('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.create` NOT VALID!: ', validResult.getErrors());
+									SHOW_WARNING(box.boxName + '.' + name + 'Model.create', MSG({
+										ko : '데이터가 유효하지 않습니다.'
+									}), {
+										data : data,
+										validErrors : validResult.getErrors()
+									});
 								}
 		
 							} else {
@@ -278,20 +222,12 @@ FOR_BOX(function(box) {
 								room.send({
 									methodName : 'create',
 									data : data
-								}, function(result) {
+								}, (result) => {
 		
-									var
-									// error msg
-									errorMsg,
-		
-									// valid errors
-									validErrors,
-		
-									// is not authed
-									isNotAuthed,
-		
-									// saved data
-									savedData;
+									let errorMsg;
+									let validErrors;
+									let isNotAuthed;
+									let savedData;
 		
 									if (result !== undefined) {
 		
@@ -304,19 +240,26 @@ FOR_BOX(function(box) {
 											if (errorHandler !== undefined) {
 												errorHandler(errorMsg);
 											} else {
-												console.log('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.create` ERROR: ' + errorMsg);
+												SHOW_ERROR(box.boxName + '.' + name + 'Model.create', errorMsg);
 											}
 										} else if (validErrors !== undefined) {
 											if (notValidHandler !== undefined) {
 												notValidHandler(validErrors);
 											} else {
-												console.log('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.create` NOT VALID!: ', validErrors);
+												SHOW_WARNING(box.boxName + '.' + name + 'Model.create', MSG({
+													ko : '데이터가 유효하지 않습니다.'
+												}), {
+													data : data,
+													validErrors : validErrors
+												});
 											}
 										} else if (isNotAuthed === true) {
 											if (notAuthedHandler !== undefined) {
 												notAuthedHandler();
 											} else {
-												console.log('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.create` NOT AUTHED!');
+												SHOW_WARNING(box.boxName + '.' + name + 'Model.create', MSG({
+													ko : '인증되지 않았습니다.'
+												}));
 											}
 										} else if (callback !== undefined) {
 											callback(savedData);
@@ -332,27 +275,23 @@ FOR_BOX(function(box) {
 		
 					// get.
 					if (getConfig !== false) {
-		
-						self.get = get = function(idOrParams, callbackOrHandlers) {
+						
+						get = self.get = (idOrParams, callbackOrHandlers) => {
 							//OPTIONAL: idOrParams
 							//OPTIONAL: idOrParams.id
 							//OPTIONAL: idOrParams.filter
 							//OPTIONAL: idOrParams.sort
 							//OPTIONAL: idOrParams.isRandom
 							//REQUIRED: callbackOrHandlers
+							//OPTIONAL: callbackOrHandlers.error
+							//OPTIONAL: callbackOrHandlers.notAuthed
+							//OPTIONAL: callbackOrHandlers.notExists
+							//OPTIONAL: callbackOrHandlers.success
 		
-							var
-							// callback.
-							callback,
-		
-							// not exists handler.
-							notExistsHandler,
-		
-							// not valid handler.
-							notAuthedHandler,
-		
-							// error handler.
-							errorHandler;
+							let errorHandler;
+							let notAuthedHandler;
+							let notExistsHandler;
+							let callback;
 							
 							// init params.
 							if (callbackOrHandlers === undefined) {
@@ -363,26 +302,20 @@ FOR_BOX(function(box) {
 							if (CHECK_IS_DATA(callbackOrHandlers) !== true) {
 								callback = callbackOrHandlers;
 							} else {
-								callback = callbackOrHandlers.success;
-								notExistsHandler = callbackOrHandlers.notExists;
-								notAuthedHandler = callbackOrHandlers.notAuthed;
 								errorHandler = callbackOrHandlers.error;
+								notAuthedHandler = callbackOrHandlers.notAuthed;
+								notExistsHandler = callbackOrHandlers.notExists;
+								callback = callbackOrHandlers.success;
 							}
 		
 							room.send({
 								methodName : 'get',
 								data : idOrParams
-							}, function(result) {
+							}, (result) => {
 		
-								var
-								// error msg
-								errorMsg,
-		
-								// is not authed
-								isNotAuthed,
-		
-								// saved data
-								savedData;
+								let errorMsg;
+								let isNotAuthed;
+								let savedData;
 		
 								if (result !== undefined) {
 									errorMsg = result.errorMsg;
@@ -394,19 +327,23 @@ FOR_BOX(function(box) {
 									if (errorHandler !== undefined) {
 										errorHandler(errorMsg);
 									} else {
-										console.log('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.get` ERROR: ' + errorMsg);
+										SHOW_ERROR(box.boxName + '.' + name + 'Model.get', errorMsg);
 									}
 								} else if (isNotAuthed === true) {
 									if (notAuthedHandler !== undefined) {
 										notAuthedHandler();
 									} else {
-										console.log('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.get` NOT AUTHED!');
+										SHOW_WARNING(box.boxName + '.' + name + 'Model.get', MSG({
+											ko : '인증되지 않았습니다.'
+										}));
 									}
 								} else if (savedData === undefined) {
 									if (notExistsHandler !== undefined) {
 										notExistsHandler();
 									} else {
-										console.log('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.get` NOT EXISTS!', idOrParams);
+										SHOW_WARNING(box.boxName + '.' + name + 'Model.get', MSG({
+											ko : '데이터가 존재하지 않습니다.'
+										}), idOrParams);
 									}
 								} else if (callback !== undefined) {
 									callback(savedData);
@@ -414,32 +351,25 @@ FOR_BOX(function(box) {
 							});
 						};
 		
-						self.getWatching = getWatching = function(idOrParams, callbackOrHandlers) {
+						getWatching = self.getWatching = (idOrParams, callbackOrHandlers) => {
 							//OPTIONAL: idOrParams
 							//OPTIONAL: idOrParams.id
 							//OPTIONAL: idOrParams.filter
 							//OPTIONAL: idOrParams.sort
 							//OPTIONAL: idOrParams.isRandom
 							//REQUIRED: callbackOrHandlers
+							//OPTIONAL: callbackOrHandlers.error
+							//OPTIONAL: callbackOrHandlers.notAuthed
+							//OPTIONAL: callbackOrHandlers.notExists
+							//REQUIRED: callbackOrHandlers.success
 		
-							var
-							// callback.
-							callback,
-		
-							// not exists handler.
-							notExistsHandler,
-		
-							// not valid handler.
-							notAuthedHandler,
-		
-							// error handler.
-							errorHandler,
-		
-							// is exited
-							isExited,
-		
-							// sub room
-							subRoom;
+							let errorHandler;
+							let notAuthedHandler;
+							let notExistsHandler;
+							let callback;
+							
+							let isExited;
+							let subRoom;
 							
 							// init params.
 							if (callbackOrHandlers === undefined) {
@@ -450,21 +380,23 @@ FOR_BOX(function(box) {
 							if (CHECK_IS_DATA(callbackOrHandlers) !== true) {
 								callback = callbackOrHandlers;
 							} else {
-								callback = callbackOrHandlers.success;
-								notExistsHandler = callbackOrHandlers.notExists;
-								notAuthedHandler = callbackOrHandlers.notAuthed;
 								errorHandler = callbackOrHandlers.error;
+								notAuthedHandler = callbackOrHandlers.notAuthed;
+								notExistsHandler = callbackOrHandlers.notExists;
+								callback = callbackOrHandlers.success;
 							}
 		
 							self.get(idOrParams, {
 		
-								success : function(savedData) {
+								error : errorHandler,
+								notAuthed : notAuthedHandler,
+								notExists : notExistsHandler,
+								
+								success : (savedData) => {
 		
-									var
-									// exit.
-									exit;
+									let exit;
 		
-									if (isExited !== true && callback !== undefined) {
+									if (isExited !== true) {
 		
 										subRoom = box.ROOM({
 											roomServerName : roomServerName,
@@ -474,42 +406,34 @@ FOR_BOX(function(box) {
 										callback(savedData,
 		
 										// add update handler.
-										function(callback) {
+										(callback) => {
 											subRoom.on('update', callback);
 										},
 		
 										// add remove handler.
-										function(callback) {
-											subRoom.on('remove', function(originData) {
+										(callback) => {
+											subRoom.on('remove', (originData) => {
 												callback(originData);
 												exit();
 											});
 										},
 		
 										// exit.
-										exit = function() {
+										exit = () => {
 											if (subRoom !== undefined) {
 												subRoom.exit();
 												subRoom = undefined;
 											}
 										});
 									}
-								},
-		
-								notExists : notExistsHandler,
-								notAuthed : notAuthedHandler,
-								error : errorHandler
+								}
 							});
 		
 							return OBJECT({
 		
-								init : function(inner, self) {
+								init : (inner, self) => {
 		
-									var
-									// exit.
-									exit;
-		
-									self.exit = exit = function() {
+									let exit = self.exit = () => {
 		
 										if (subRoom !== undefined) {
 											subRoom.exit();
@@ -525,63 +449,42 @@ FOR_BOX(function(box) {
 					// update.
 					if (updateConfig !== false) {
 		
-						self.update = update = function(data, callbackOrHandlers) {
+						update = self.update = (data, callbackOrHandlers) => {
 							//REQUIRED: data
 							//REQUIRED: data.id
 							//OPTIONAL: callbackOrHandlers
+							//OPTIONAL: callbackOrHandlers.error
+							//OPTIONAL: callbackOrHandlers.notValid
+							//OPTIONAL: callbackOrHandlers.notAuthed
+							//OPTIONAL: callbackOrHandlers.notExists
+							//OPTIONAL: callbackOrHandlers.success
 		
-							var
-							// id
-							id = data.id,
+							let id = data.id;
+							let $inc = data.$inc;
+							let $push = data.$push;
+							let $pull = data.$pull;
 							
-							// $inc
-							$inc = data.$inc,
-							
-							// $push
-							$push = data.$push,
-							
-							// $pull
-							$pull = data.$pull,
-		
-							// callback.
-							callback,
-		
-							// not valid handler.
-							notValidHandler,
-		
-							// not exists handler.
-							notExistsHandler,
-		
-							// not valid handler.
-							notAuthedHandler,
-		
-							// error handler.
-							errorHandler,
-		
-							// valid result
-							validResult,
-		
-							// $inc valid result
-							$incValidResult,
-		
-							// $push valid result
-							$pushValidResult,
-		
-							// $pull valid result
-							$pullValidResult,
-							
-							// valied errors
-							validErrors;
+							let errorHandler;
+							let notValidHandler;
+							let notAuthedHandler;
+							let notExistsHandler;
+							let callback;
+
+							let validResult;
+							let $incValidResult;
+							let $pushValidResult;
+							let $pullValidResult;
+							let validErrors;
 		
 							if (callbackOrHandlers !== undefined) {
 								if (CHECK_IS_DATA(callbackOrHandlers) !== true) {
 									callback = callbackOrHandlers;
 								} else {
-									callback = callbackOrHandlers.success;
-									notValidHandler = callbackOrHandlers.notValid;
-									notExistsHandler = callbackOrHandlers.notExists;
-									notAuthedHandler = callbackOrHandlers.notAuthed;
 									errorHandler = callbackOrHandlers.error;
+									notValidHandler = callbackOrHandlers.notValid;
+									notAuthedHandler = callbackOrHandlers.notAuthed;
+									notExistsHandler = callbackOrHandlers.notExists;
+									callback = callbackOrHandlers.success;
 								}
 							}
 		
@@ -595,13 +498,11 @@ FOR_BOX(function(box) {
 								
 								if ($push !== undefined) {
 									
-									$pushValidResult = updateValid.checkForUpdate(RUN(function() {
+									$pushValidResult = updateValid.checkForUpdate(RUN(() => {
 										
-										var
-										// data for valid
-										dataForValid = {};
+										let dataForValid = {};
 										
-										EACH($push, function(value, attr) {
+										EACH($push, (value, attr) => {
 											dataForValid[attr] = [value];
 										});
 										
@@ -611,13 +512,11 @@ FOR_BOX(function(box) {
 								
 								if ($pull !== undefined) {
 									
-									$pullValidResult = updateValid.checkForUpdate(RUN(function() {
+									$pullValidResult = updateValid.checkForUpdate(RUN(() => {
 										
-										var
-										// data for valid
-										dataForValid = {};
+										let dataForValid = {};
 										
-										EACH($pull, function(value, attr) {
+										EACH($pull, (value, attr) => {
 											dataForValid[attr] = [value];
 										});
 										
@@ -648,7 +547,12 @@ FOR_BOX(function(box) {
 								if (notValidHandler !== undefined) {
 									notValidHandler(validErrors);
 								} else {
-									console.log('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.update` NOT VALID!: ', validErrors);
+									SHOW_WARNING(box.boxName + '.' + name + 'Model.update', MSG({
+										ko : '데이터가 유효하지 않습니다.'
+									}), {
+										data : data,
+										validErrors : validErrors
+									});
 								}
 		
 							} else {
@@ -656,23 +560,13 @@ FOR_BOX(function(box) {
 								room.send({
 									methodName : 'update',
 									data : data
-								}, function(result) {
+								}, (result) => {
 		
-									var
-									// error msg
-									errorMsg,
-		
-									// valid errors
-									validErrors,
-		
-									// is not authed
-									isNotAuthed,
-		
-									// saved data
-									savedData,
-									
-									// origin data
-									originData;
+									let errorMsg;
+									let validErrors;
+									let isNotAuthed;
+									let savedData;
+									let originData;
 		
 									if (result !== undefined) {
 										errorMsg = result.errorMsg;
@@ -686,25 +580,34 @@ FOR_BOX(function(box) {
 										if (errorHandler !== undefined) {
 											errorHandler(errorMsg);
 										} else {
-											console.log('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.update` ERROR: ' + errorMsg);
+											SHOW_ERROR(box.boxName + '.' + name + 'Model.update', errorMsg);
 										}
 									} else if (validErrors !== undefined) {
 										if (notValidHandler !== undefined) {
 											notValidHandler(validErrors);
 										} else {
-											console.log('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.update` NOT VALID!: ', validErrors);
+											SHOW_WARNING(box.boxName + '.' + name + 'Model.update', MSG({
+												ko : '데이터가 유효하지 않습니다.'
+											}), {
+												data : data,
+												validErrors : validErrors
+											});
 										}
 									} else if (isNotAuthed === true) {
 										if (notAuthedHandler !== undefined) {
 											notAuthedHandler();
 										} else {
-											console.log('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.update` NOT AUTHED!');
+											SHOW_WARNING(box.boxName + '.' + name + 'Model.update', MSG({
+												ko : '인증되지 않았습니다.'
+											}));
 										}
 									} else if (savedData === undefined) {
 										if (notExistsHandler !== undefined) {
 											notExistsHandler();
 										} else {
-											console.log('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.update` NOT EXISTS!', data);
+											SHOW_WARNING(box.boxName + '.' + name + 'Model.update', MSG({
+												ko : '수정할 데이터가 존재하지 않습니다.'
+											}), data);
 										}
 									} else if (callback !== undefined) {
 										callback(savedData, originData);
@@ -717,48 +620,38 @@ FOR_BOX(function(box) {
 					// remove.
 					if (removeConfig !== false) {
 		
-						self.remove = remove = function(id, callbackOrHandlers) {
+						remove = self.remove = (id, callbackOrHandlers) => {
 							//REQUIRED: id
 							//OPTIONAL: callbackOrHandlers
+							//OPTIONAL: callbackOrHandlers.error
+							//OPTIONAL: callbackOrHandlers.notAuthed
+							//OPTIONAL: callbackOrHandlers.notExists
+							//OPTIONAL: callbackOrHandlers.success
 		
-							var
-							// callback.
-							callback,
-		
-							// not exists handler.
-							notExistsHandler,
-		
-							// not valid handler.
-							notAuthedHandler,
-		
-							// error handler.
-							errorHandler;
+							let errorHandler;
+							let notAuthedHandler;
+							let notExistsHandler;
+							let callback;
 		
 							if (callbackOrHandlers !== undefined) {
 								if (CHECK_IS_DATA(callbackOrHandlers) !== true) {
 									callback = callbackOrHandlers;
 								} else {
-									callback = callbackOrHandlers.success;
-									notExistsHandler = callbackOrHandlers.notExists;
-									notAuthedHandler = callbackOrHandlers.notAuthed;
 									errorHandler = callbackOrHandlers.error;
+									notAuthedHandler = callbackOrHandlers.notAuthed;
+									notExistsHandler = callbackOrHandlers.notExists;
+									callback = callbackOrHandlers.success;
 								}
 							}
 		
 							room.send({
 								methodName : 'remove',
 								data : id
-							}, function(result) {
+							}, (result) => {
 		
-								var
-								// error msg
-								errorMsg,
-		
-								// is not authed
-								isNotAuthed,
-		
-								// origin data
-								originData;
+								let errorMsg;
+								let isNotAuthed;
+								let originData;
 		
 								if (result !== undefined) {
 									errorMsg = result.errorMsg;
@@ -770,19 +663,23 @@ FOR_BOX(function(box) {
 									if (errorHandler !== undefined) {
 										errorHandler(errorMsg);
 									} else {
-										console.log('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.remove` ERROR: ' + errorMsg);
+										SHOW_ERROR(box.boxName + '.' + name + 'Model.remove', errorMsg);
 									}
 								} else if (isNotAuthed === true) {
 									if (notAuthedHandler !== undefined) {
 										notAuthedHandler();
 									} else {
-										console.log('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.remove` NOT AUTHED!');
+										SHOW_WARNING(box.boxName + '.' + name + 'Model.remove', MSG({
+											ko : '인증되지 않았습니다.'
+										}));
 									}
 								} else if (originData === undefined) {
 									if (notExistsHandler !== undefined) {
 										notExistsHandler();
 									} else {
-										console.log('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.remove` NOT EXISTS!', id);
+										SHOW_WARNING(box.boxName + '.' + name + 'Model.remove', MSG({
+											ko : '삭제할 데이터가 존재하지 않습니다.'
+										}), id);
 									}
 								} else if (callback !== undefined) {
 									callback(originData);
@@ -794,23 +691,20 @@ FOR_BOX(function(box) {
 					// find.
 					if (findConfig !== false) {
 		
-						self.find = find = function(params, callbackOrHandlers) {
+						find = self.find = (params, callbackOrHandlers) => {
 							//OPTIONAL: params
 							//OPTIONAL: params.filter
 							//OPTIONAL: params.sort
 							//OPTIONAL: params.start
 							//OPTIONAL: params.count
 							//REQUIRED: callbackOrHandlers
+							//OPTIONAL: callbackOrHandlers.error
+							//OPTIONAL: callbackOrHandlers.notAuthed
+							//REQUIRED: callbackOrHandlers.success
 		
-							var
-							// callback.
-							callback,
-		
-							// not valid handler.
-							notAuthedHandler,
-		
-							// error handler.
-							errorHandler;
+							let errorHandler;
+							let notAuthedHandler;
+							let callback;
 		
 							// init params.
 							if (callbackOrHandlers === undefined) {
@@ -821,67 +715,57 @@ FOR_BOX(function(box) {
 							if (CHECK_IS_DATA(callbackOrHandlers) !== true) {
 								callback = callbackOrHandlers;
 							} else {
-								callback = callbackOrHandlers.success;
-								notAuthedHandler = callbackOrHandlers.notAuthed;
 								errorHandler = callbackOrHandlers.error;
+								notAuthedHandler = callbackOrHandlers.notAuthed;
+								callback = callbackOrHandlers.success;
 							}
 		
 							room.send({
 								methodName : 'find',
 								data : params
-							}, function(result) {
+							}, (result) => {
 		
-								var
-								// error msg
-								errorMsg = result.errorMsg,
-		
-								// is not authed
-								isNotAuthed = result.isNotAuthed,
-		
-								// saved data set
-								savedDataSet = result.savedDataSet;
+								let errorMsg = result.errorMsg;
+								let isNotAuthed = result.isNotAuthed;
+								let savedDataSet = result.savedDataSet;
 		
 								if (errorMsg !== undefined) {
 									if (errorHandler !== undefined) {
 										errorHandler(errorMsg);
 									} else {
-										console.log('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.find` ERROR: ' + errorMsg);
+										SHOW_ERROR(box.boxName + '.' + name + 'Model.find', errorMsg);
 									}
 								} else if (isNotAuthed === true) {
 									if (notAuthedHandler !== undefined) {
 										notAuthedHandler();
 									} else {
-										console.log('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.find` NOT AUTHED!');
+										SHOW_WARNING(box.boxName + '.' + name + 'Model.find', MSG({
+											ko : '인증되지 않았습니다.'
+										}));
 									}
-								} else if (callback !== undefined) {
+								} else {
 									callback(savedDataSet);
 								}
 							});
 						};
 		
-						self.findWatching = findWatching = function(params, callbackOrHandlers) {
+						findWatching = self.findWatching = (params, callbackOrHandlers) => {
 							//OPTIONAL: params
 							//OPTIONAL: params.filter
 							//OPTIONAL: params.sort
 							//OPTIONAL: params.start
 							//OPTIONAL: params.count
 							//REQUIRED: callbackOrHandlers
+							//OPTIONAL: callbackOrHandlers.error
+							//OPTIONAL: callbackOrHandlers.notAuthed
+							//REQUIRED: callbackOrHandlers.success
 		
-							var
-							// callback.
-							callback,
-		
-							// not valid handler.
-							notAuthedHandler,
-		
-							// error handler.
-							errorHandler,
-		
-							// is exited
-							isExited,
-		
-							// sub rooms
-							subRooms = {};
+							let errorHandler;
+							let notAuthedHandler;
+							let callback;
+							
+							let isExited;
+							let subRooms = {};
 		
 							// init params.
 							if (callbackOrHandlers === undefined) {
@@ -892,26 +776,22 @@ FOR_BOX(function(box) {
 							if (CHECK_IS_DATA(callbackOrHandlers) !== true) {
 								callback = callbackOrHandlers;
 							} else {
-								callback = callbackOrHandlers.success;
-								notAuthedHandler = callbackOrHandlers.notAuthed;
 								errorHandler = callbackOrHandlers.error;
+								notAuthedHandler = callbackOrHandlers.notAuthed;
+								callback = callbackOrHandlers.success;
 							}
 		
 							self.find(params, {
 		
-								success : function(savedDataSet) {
+								success : (savedDataSet) => {
 		
-									var
-									// exit.
-									exit;
+									let exit;
 		
-									if (isExited !== true && callback !== undefined) {
+									if (isExited !== true) {
 		
-										EACH(savedDataSet, function(savedData, i) {
+										EACH(savedDataSet, (savedData, i) => {
 		
-											var
-											// id
-											id = savedData.id;
+											let id = savedData.id;
 		
 											subRooms[id] = box.ROOM({
 												roomServerName : roomServerName,
@@ -922,20 +802,20 @@ FOR_BOX(function(box) {
 										callback(savedDataSet,
 		
 										// add update handler.
-										function(id, callback) {
+										(id, callback) => {
 											subRooms[id].on('update', callback);
 										},
 		
 										// add remove handler.
-										function(id, callback) {
-											subRooms[id].on('remove', function(originData) {
+										(id, callback) => {
+											subRooms[id].on('remove', (originData) => {
 												callback(originData);
 												exit(id);
 											});
 										},
 		
 										// exit.
-										exit = function(id) {
+										exit = (id) => {
 											if (subRooms[id] !== undefined) {
 												subRooms[id].exit();
 												delete subRooms[id];
@@ -950,15 +830,11 @@ FOR_BOX(function(box) {
 		
 							return OBJECT({
 		
-								init : function(inner, self) {
+								init : (inner, self) => {
+									
+									let exit = self.exit = () => {
 		
-									var
-									// exit.
-									exit;
-		
-									self.exit = exit = function() {
-		
-										EACH(subRooms, function(subRoom) {
+										EACH(subRooms, (subRoom) => {
 											subRoom.exit();
 										});
 		
@@ -971,20 +847,17 @@ FOR_BOX(function(box) {
 		
 					if (countConfig !== false) {
 		
-						self.count = count = function(params, callbackOrHandlers) {
+						count = self.count = (params, callbackOrHandlers) => {
 							//OPTIONAL: params
 							//OPTIONAL: params.filter
 							//REQUIRED: callbackOrHandlers
+							//OPTIONAL: callbackOrHandlers.error
+							//OPTIONAL: callbackOrHandlers.notAuthed
+							//REQUIRED: callbackOrHandlers.success
 		
-							var
-							// callback.
-							callback,
-		
-							// not valid handler.
-							notAuthedHandler,
-		
-							// error handler.
-							errorHandler;
+							let errorHandler;
+							let notAuthedHandler;
+							let callback;
 		
 							// init params.
 							if (callbackOrHandlers === undefined) {
@@ -995,39 +868,35 @@ FOR_BOX(function(box) {
 							if (CHECK_IS_DATA(callbackOrHandlers) !== true) {
 								callback = callbackOrHandlers;
 							} else {
-								callback = callbackOrHandlers.success;
-								notAuthedHandler = callbackOrHandlers.notAuthed;
 								errorHandler = callbackOrHandlers.error;
+								notAuthedHandler = callbackOrHandlers.notAuthed;
+								callback = callbackOrHandlers.success;
 							}
 		
 							room.send({
 								methodName : 'count',
 								data : params
-							}, function(result) {
+							}, (result) => {
 		
-								var
-								// error msg
-								errorMsg = result.errorMsg,
-		
-								// is not authed
-								isNotAuthed = result.isNotAuthed,
-		
-								// count
-								count = result.count;
+								let errorMsg = result.errorMsg;
+								let isNotAuthed = result.isNotAuthed;
+								let count = result.count;
 		
 								if (errorMsg !== undefined) {
 									if (errorHandler !== undefined) {
 										errorHandler(errorMsg);
 									} else {
-										console.log('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.count` ERROR: ' + errorMsg);
+										SHOW_ERROR(box.boxName + '.' + name + 'Model.count', errorMsg);
 									}
 								} else if (isNotAuthed === true) {
 									if (notAuthedHandler !== undefined) {
 										notAuthedHandler();
 									} else {
-										console.log('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.count` NOT AUTHED!');
+										SHOW_WARNING(box.boxName + '.' + name + 'Model.count', MSG({
+											ko : '인증되지 않았습니다.'
+										}));
 									}
-								} else if (callback !== undefined) {
+								} else {
 									callback(count);
 								}
 							});
@@ -1036,20 +905,17 @@ FOR_BOX(function(box) {
 		
 					if (checkIsExistsConfig !== false) {
 		
-						self.checkIsExists = checkIsExists = function(params, callbackOrHandlers) {
+						checkIsExists = self.checkIsExists = (params, callbackOrHandlers) => {
 							//OPTIONAL: params
 							//OPTIONAL: params.filter
 							//REQUIRED: callbackOrHandlers
+							//OPTIONAL: callbackOrHandlers.error
+							//OPTIONAL: callbackOrHandlers.notAuthed
+							//REQUIRED: callbackOrHandlers.success
 		
-							var
-							// callback.
-							callback,
-		
-							// not valid handler.
-							notAuthedHandler,
-		
-							// error handler.
-							errorHandler;
+							let errorHandler;
+							let notAuthedHandler;
+							let callback;
 		
 							// init params.
 							if (callbackOrHandlers === undefined) {
@@ -1060,55 +926,48 @@ FOR_BOX(function(box) {
 							if (CHECK_IS_DATA(callbackOrHandlers) !== true) {
 								callback = callbackOrHandlers;
 							} else {
-								callback = callbackOrHandlers.success;
-								notAuthedHandler = callbackOrHandlers.notAuthed;
 								errorHandler = callbackOrHandlers.error;
+								notAuthedHandler = callbackOrHandlers.notAuthed;
+								callback = callbackOrHandlers.success;
 							}
 		
 							room.send({
 								methodName : 'checkIsExists',
 								data : params
-							}, function(result) {
+							}, (result) => {
 		
-								var
-								// error msg
-								errorMsg = result.errorMsg,
-		
-								// is not authed
-								isNotAuthed = result.isNotAuthed,
-		
-								// is exists
-								isExists = result.isExists;
+								let errorMsg = result.errorMsg;
+								let isNotAuthed = result.isNotAuthed;
+								let isExists = result.isExists;
 		
 								if (errorMsg !== undefined) {
 									if (errorHandler !== undefined) {
 										errorHandler(errorMsg);
 									} else {
-										console.log('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.checkIsExists` ERROR: ' + errorMsg);
+										SHOW_ERROR(box.boxName + '.' + name + 'Model.checkIsExists', errorMsg);
 									}
 								} else if (isNotAuthed === true) {
 									if (notAuthedHandler !== undefined) {
 										notAuthedHandler();
 									} else {
-										console.log('[UPPERCASE-MODEL] `' + box.boxName + '.' + name + 'Model.checkIsExists` NOT AUTHED!');
+										SHOW_WARNING(box.boxName + '.' + name + 'Model.checkIsExists', MSG({
+											ko : '인증되지 않았습니다.'
+										}));
 									}
-								} else if (callback !== undefined) {
+								} else {
 									callback(isExists);
 								}
 							});
 						};
 					}
 		
-					self.onNew = onNew = function(properties, handler) {
+					let onNew = self.onNew = (properties, handler) => {
 						//OPTIONAL: properties
 						//REQUIRED: handler
 		
-						var
-						// room for create
-						roomForCreate,
+						let roomForCreate;
 						
-						// info id
-						infoId = onNewInfoCount;
+						let infoId = onNewInfoCount;
 						
 						onNewInfoCount += 1;
 		
@@ -1116,10 +975,10 @@ FOR_BOX(function(box) {
 							handler = properties;
 							properties = undefined;
 		
-							( roomForCreate = box.ROOM({
+							(roomForCreate = box.ROOM({
 								roomServerName : roomServerName,
 								name : name + '/create'
-							})).on('create', function(savedData) {
+							})).on('create', (savedData) => {
 								
 								onNewInfos[infoId].lastCreateTime = savedData.createTime;
 								
@@ -1128,10 +987,10 @@ FOR_BOX(function(box) {
 		
 						} else if (properties === undefined) {
 							
-							( roomForCreate = box.ROOM({
+							(roomForCreate = box.ROOM({
 								roomServerName : roomServerName,
 								name : name + '/create'
-							})).on('create', function(savedData) {
+							})).on('create', (savedData) => {
 								
 								onNewInfos[infoId].lastCreateTime = savedData.createTime;
 								
@@ -1140,16 +999,16 @@ FOR_BOX(function(box) {
 		
 						} else {
 		
-							EACH(properties, function(value, propertyName) {
+							EACH(properties, (value, propertyName) => {
 								
 								if (value !== undefined) {
 		
-									( roomForCreate = box.ROOM({
+									(roomForCreate = box.ROOM({
 										roomServerName : roomServerName,
 										name : name + '/' + propertyName + '/' + value + '/create'
-									})).on('create', function(savedData) {
+									})).on('create', (savedData) => {
 			
-										if (EACH(properties, function(value, propertyName) {
+										if (EACH(properties, (value, propertyName) => {
 											
 											if (value !== undefined) {
 												
@@ -1181,7 +1040,8 @@ FOR_BOX(function(box) {
 						}
 						
 						onNewInfos[infoId] = {
-							findMissingDataSet : function() {
+							
+							findMissingDataSet : () => {
 								
 								if (onNewInfos[infoId].lastCreateTime !== undefined && find !== undefined) {
 									
@@ -1202,13 +1062,9 @@ FOR_BOX(function(box) {
 		
 						return OBJECT({
 		
-							init : function(inner, self) {
-		
-								var
-								// exit.
-								exit;
-		
-								self.exit = exit = function() {
+							init : (inner, self) => {
+								
+								let exit = self.exit = () => {
 									
 									delete onNewInfos[infoId];
 									
@@ -1220,34 +1076,25 @@ FOR_BOX(function(box) {
 						});
 					};
 		
-					self.onNewWatching = onNewWatching = function(properties, handler) {
+					let onNewWatching = self.onNewWatching = (properties, handler) => {
 						//OPTIONAL: properties
 						//REQUIRED: handler
 		
-						var
-						// room for create
-						roomForCreate,
+						let roomForCreate;
 						
-						// info id
-						infoId = onNewInfoCount,
+						let infoId = onNewInfoCount;
+						
+						let subRooms = [];
+						
+						let innerHandler = (savedData) => {
 		
-						// sub rooms
-						subRooms = [],
+							let id = savedData.id;
+							
+							let subRoom;
+							
+							let exit;
 		
-						// inner handler.
-						innerHandler = function(savedData) {
-		
-							var
-							// id
-							id = savedData.id,
-		
-							// sub room
-							subRoom,
-		
-							// close watching.
-							closeWatching;
-		
-							subRooms.push( subRoom = box.ROOM({
+							subRooms.push(subRoom = box.ROOM({
 								roomServerName : roomServerName,
 								name : name + '/' + id
 							}));
@@ -1255,20 +1102,20 @@ FOR_BOX(function(box) {
 							handler(savedData,
 		
 							// add update handler.
-							function(callback) {
+							(callback) => {
 								subRoom.on('update', callback);
 							},
 		
 							// add remove handler.
-							function(callback) {
-								subRoom.on('remove', function(originData) {
+							(callback) => {
+								subRoom.on('remove', (originData) => {
 									callback(originData);
-									closeWatching();
+									exit();
 								});
 							},
-		
-							// close watching.
-							closeWatching = function() {
+							
+							// exit.
+							exit = () => {
 		
 								subRoom.exit();
 		
@@ -1285,10 +1132,10 @@ FOR_BOX(function(box) {
 							handler = properties;
 							properties = undefined;
 		
-							( roomForCreate = box.ROOM({
+							(roomForCreate = box.ROOM({
 								roomServerName : roomServerName,
 								name : name + '/create'
-							})).on('create', function(savedData) {
+							})).on('create', (savedData) => {
 								
 								onNewInfos[infoId].lastCreateTime = savedData.createTime;
 								
@@ -1297,10 +1144,10 @@ FOR_BOX(function(box) {
 		
 						} else if (properties === undefined) {
 		
-							( roomForCreate = box.ROOM({
+							(roomForCreate = box.ROOM({
 								roomServerName : roomServerName,
 								name : name + '/create'
-							})).on('create', function(savedData) {
+							})).on('create', (savedData) => {
 								
 								onNewInfos[infoId].lastCreateTime = savedData.createTime;
 								
@@ -1309,16 +1156,16 @@ FOR_BOX(function(box) {
 							
 						} else {
 		
-							EACH(properties, function(value, propertyName) {
+							EACH(properties, (value, propertyName) => {
 								
 								if (value !== undefined) {
 		
-									( roomForCreate = box.ROOM({
+									(roomForCreate = box.ROOM({
 										roomServerName : roomServerName,
 										name : name + '/' + propertyName + '/' + value + '/create'
-									})).on('create', function(savedData) {
+									})).on('create', (savedData) => {
 			
-										if (EACH(properties, function(value, propertyName) {
+										if (EACH(properties, (value, propertyName) => {
 											
 											if (value !== undefined) {
 												
@@ -1350,7 +1197,8 @@ FOR_BOX(function(box) {
 						}
 						
 						onNewInfos[infoId] = {
-							findMissingDataSet : function() {
+							
+							findMissingDataSet : () => {
 								
 								if (onNewInfos[infoId].lastCreateTime !== undefined && find !== undefined) {
 									
@@ -1371,13 +1219,9 @@ FOR_BOX(function(box) {
 		
 						return OBJECT({
 		
-							init : function(inner, self) {
-		
-								var
-								// exit.
-								exit;
-		
-								self.exit = exit = function() {
+							init : (inner, self) => {
+								
+								let exit = self.exit = () => {
 									
 									delete onNewInfos[infoId];
 		
@@ -1385,7 +1229,7 @@ FOR_BOX(function(box) {
 										roomForCreate.exit();
 									}
 		
-									EACH(subRooms, function(subRoom) {
+									EACH(subRooms, (subRoom) => {
 										subRoom.exit();
 									});
 								};
@@ -1396,7 +1240,7 @@ FOR_BOX(function(box) {
 					// on new and find.
 					if (findConfig !== false) {
 						
-						self.onNewAndFind = onNewAndFind = function(params, handlerOrHandlers) {
+						onNewAndFind = self.onNewAndFind = (params, handlerOrHandlers) => {
 							//OPTIONAL: params
 							//OPTIONAL: params.properties
 							//OPTIONAL: params.filter
@@ -1405,44 +1249,23 @@ FOR_BOX(function(box) {
 							//OPTIONAL: params.count
 							//OPTIONAL: params.isNotOnNew
 							//REQUIRED: handlerOrHandlers
-							//REQUIRED: handlerOrHandlers.handler
-							//OPTIONAL: handlerOrHandlers.success
-							//OPTIONAL: handlerOrHandlers.notAuthed
 							//OPTIONAL: handlerOrHandlers.error
+							//OPTIONAL: handlerOrHandlers.notAuthed
+							//OPTIONAL: handlerOrHandlers.success
+							//REQUIRED: handlerOrHandlers.handler
 							
-							var
-							// properties
-							properties,
+							let properties;
+							let filter;
+							let sort;
+							let start;
+							let count;
+							let isNotOnNew;
+							let onNewRoom;
 							
-							// filter
-							filter,
-							
-							// sort
-							sort,
-							
-							// start
-							start,
-							
-							// count
-							count,
-							
-							// is not on new
-							isNotOnNew,
-							
-							// on new room
-							onNewRoom,
-							
-							// handler.
-							handler,
-							
-							// callback.
-							callback,
-		
-							// not valid handler.
-							notAuthedHandler,
-		
-							// error handler.
-							errorHandler;
+							let errorHandler;
+							let notAuthedHandler;
+							let callback;
+							let handler;
 		
 							// init params.
 							if (handlerOrHandlers === undefined) {
@@ -1462,14 +1285,14 @@ FOR_BOX(function(box) {
 							if (CHECK_IS_DATA(handlerOrHandlers) !== true) {
 								handler = handlerOrHandlers;
 							} else {
-								handler = handlerOrHandlers.handler;
-								callback = handlerOrHandlers.success;
-								notAuthedHandler = handlerOrHandlers.notAuthed;
 								errorHandler = handlerOrHandlers.error;
+								notAuthedHandler = handlerOrHandlers.notAuthed;
+								callback = handlerOrHandlers.success;
+								handler = handlerOrHandlers.handler;
 							}
 							
 							if (isNotOnNew !== true) {
-								onNewRoom = onNew(properties, function(savedData) {
+								onNewRoom = onNew(properties, (savedData) => {
 									handler(savedData, true);
 								});
 							}
@@ -1480,13 +1303,13 @@ FOR_BOX(function(box) {
 								start : start,
 								count : count
 							}, {
-								success : function(savedDataSet) {
+								success : (savedDataSet) => {
 									
 									if (callback !== undefined) {
 										callback(savedDataSet);
 									}
 									
-									REVERSE_EACH(savedDataSet, function(savedData) {
+									REVERSE_EACH(savedDataSet, (savedData) => {
 										handler(savedData, false);
 									});
 								},
@@ -1496,13 +1319,9 @@ FOR_BOX(function(box) {
 							
 							return OBJECT({
 			
-								init : function(inner, self) {
-			
-									var
-									// exit.
-									exit;
-			
-									self.exit = exit = function() {
+								init : (inner, self) => {
+									
+									let exit = self.exit = () => {
 			
 										if (onNewRoom !== undefined) {
 											onNewRoom.exit();
@@ -1512,7 +1331,7 @@ FOR_BOX(function(box) {
 							});
 						};
 						
-						self.onNewAndFindWatching = onNewAndFindWatching = function(params, handlerOrHandlers) {
+						onNewAndFindWatching = self.onNewAndFindWatching = (params, handlerOrHandlers) => {
 							//OPTIONAL: params
 							//OPTIONAL: params.properties
 							//OPTIONAL: params.filter
@@ -1521,47 +1340,25 @@ FOR_BOX(function(box) {
 							//OPTIONAL: params.count
 							//OPTIONAL: params.isNotOnNew
 							//REQUIRED: handlerOrHandlers
-							//REQUIRED: handlerOrHandlers.handler
-							//OPTIONAL: handlerOrHandlers.success
-							//OPTIONAL: handlerOrHandlers.notAuthed
 							//OPTIONAL: handlerOrHandlers.error
+							//OPTIONAL: handlerOrHandlers.notAuthed
+							//OPTIONAL: handlerOrHandlers.success
+							//REQUIRED: handlerOrHandlers.handler
 							
-							var
-							// properties
-							properties,
+							let properties;
+							let filter;
+							let sort;
+							let start;
+							let count;
+							let isNotOnNew;
 							
-							// filter
-							filter,
+							let errorHandler;
+							let notAuthedHandler;
+							let callback;
+							let handler;
 							
-							// sort
-							sort,
-							
-							// start
-							start,
-							
-							// count
-							count,
-							
-							// is not on new
-							isNotOnNew,
-							
-							// on new watching room
-							onNewWatchingRoom,
-							
-							// find watching room
-							findWatchingRoom,
-							
-							// handler.
-							handler,
-							
-							// callback.
-							callback,
-		
-							// not valid handler.
-							notAuthedHandler,
-		
-							// error handler.
-							errorHandler;
+							let onNewWatchingRoom;
+							let findWatchingRoom;
 		
 							// init params.
 							if (handlerOrHandlers === undefined) {
@@ -1581,15 +1378,15 @@ FOR_BOX(function(box) {
 							if (CHECK_IS_DATA(handlerOrHandlers) !== true) {
 								handler = handlerOrHandlers;
 							} else {
-								handler = handlerOrHandlers.handler;
-								callback = handlerOrHandlers.success;
-								notAuthedHandler = handlerOrHandlers.notAuthed;
 								errorHandler = handlerOrHandlers.error;
+								notAuthedHandler = handlerOrHandlers.notAuthed;
+								callback = handlerOrHandlers.success;
+								handler = handlerOrHandlers.handler;
 							}
 							
 							if (isNotOnNew !== true) {
-								onNewWatchingRoom = onNewWatching(properties, function(savedData, addUpdateHandler, addRemoveHandler, closeWatching) {
-									handler(savedData, addUpdateHandler, addRemoveHandler, closeWatching, true);
+								onNewWatchingRoom = onNewWatching(properties, (savedData, addUpdateHandler, addRemoveHandler, exit) => {
+									handler(savedData, addUpdateHandler, addRemoveHandler, exit, true);
 								});
 							}
 							
@@ -1599,21 +1396,26 @@ FOR_BOX(function(box) {
 								start : start,
 								count : count
 							}, {
-								success : function(savedDataSet, addUpdateHandler, addRemoveHandler, exit) {
+								success : (savedDataSet, addUpdateHandler, addRemoveHandler, exit) => {
 									
 									if (callback !== undefined) {
 										callback(savedDataSet, addUpdateHandler, addRemoveHandler, exit);
 									}
 									
-									REVERSE_EACH(savedDataSet, function(savedData) {
-										handler(savedData, function(handler) {
+									REVERSE_EACH(savedDataSet, (savedData) => {
+										
+										handler(savedData,
+											
+										(handler) => {
 											addUpdateHandler(savedData.id, handler);
-										}, function(handler) {
+										},
+										
+										(handler) => {
 											addRemoveHandler(savedData.id, handler);
 										},
 	
-										// close watching.
-										function() {
+										// exit.
+										() => {
 											exit(savedData.id);
 										},
 										
@@ -1627,13 +1429,9 @@ FOR_BOX(function(box) {
 							
 							return OBJECT({
 			
-								init : function(inner, self) {
-			
-									var
-									// exit.
-									exit;
-			
-									self.exit = exit = function() {
+								init : (inner, self) => {
+									
+									let exit = self.exit = () => {
 			
 										if (onNewWatchingRoom !== undefined) {
 											onNewWatchingRoom.exit();
@@ -1646,34 +1444,32 @@ FOR_BOX(function(box) {
 						};
 					}
 		
-					self.onRemove = onRemove = function(properties, handler) {
+					let onRemove = self.onRemove = (properties, handler) => {
 						//OPTIONAL: properties
 						//REQUIRED: handler
 		
-						var
-						// room for removes
-						roomForRemove;
+						let roomForRemove;
 		
 						if (handler === undefined) {
 							handler = properties;
 		
-							( roomForRemove = box.ROOM({
+							(roomForRemove = box.ROOM({
 								roomServerName : roomServerName,
 								name : name + '/remove'
 							})).on('remove', handler);
 		
 						} else {
 		
-							EACH(properties, function(value, propertyName) {
+							EACH(properties, (value, propertyName) => {
 								
 								if (value !== undefined) {
 									
-									( roomForRemove = box.ROOM({
+									(roomForRemove = box.ROOM({
 										roomServerName : roomServerName,
 										name : name + '/' + propertyName + '/' + value + '/remove'
-									})).on('remove', function(originData) {
+									})).on('remove', (originData) => {
 			
-										if (EACH(properties, function(value, propertyName) {
+										if (EACH(properties, (value, propertyName) => {
 											
 											if (value !== undefined) {
 												
@@ -1698,13 +1494,9 @@ FOR_BOX(function(box) {
 		
 						return OBJECT({
 		
-							init : function(inner, self) {
-		
-								var
-								// exit.
-								exit;
-		
-								self.exit = exit = function() {
+							init : (inner, self) => {
+								
+								let exit = self.exit = () => {
 									if (roomForRemove !== undefined) {
 										roomForRemove.exit();
 									}

@@ -1,224 +1,25 @@
 /*
 
-Welcome to UPPERCASE! (http://uppercase.io)
+Welcome to UPPERCASE-ROOM! (http://uppercase.io)
 
 */
 
-FOR_BOX(function(box) {
-	'use strict';
-
-	/**
-	 * Connection room class
-	 */
-	box.ROOM = CLASS({
-
-		init : function(inner, self, nameOrParams) {
-			//REQUIRED: nameOrParams
-			//OPTIONAL: nameOrParams.roomServerName
-			//REQUIRED: nameOrParams.name
-
-			var
-			// room server name
-			roomServerName,
-			
-			// room name
-			roomName,
-
-			// method map
-			methodMap = {},
-
-			// is exited
-			isExited,
-
-			// get room name.
-			getRoomName,
-
-			// check is exited.
-			checkIsExited,
-
-			// on.
-			on,
-
-			// off.
-			off,
-
-			// send.
-			send,
-
-			// exit.
-			exit;
-			
-			if (CHECK_IS_DATA(nameOrParams) !== true) {
-				roomName = box.boxName + '/' + nameOrParams;
-			} else {
-				roomServerName = nameOrParams.roomServerName;
-				roomName = box.boxName + '/' + nameOrParams.name;
-			}
-
-			CONNECT_TO_ROOM_SERVER.enterRoom({
-				roomServerName : roomServerName,
-				roomName : roomName
-			});
-
-			inner.getRoomName = getRoomName = function() {
-				return roomName;
-			};
-
-			inner.checkIsExited = checkIsExited = function() {
-				return isExited;
-			};
-
-			self.on = on = function(methodName, method) {
-				//REQUIRED: methodName
-				//REQUIRED: method
-
-				var
-				// methods
-				methods = methodMap[methodName];
-
-				CONNECT_TO_ROOM_SERVER.on({
-					roomServerName : roomServerName,
-					methodName : roomName + '/' + methodName
-				}, method);
-
-				if (methods === undefined) {
-					methods = methodMap[methodName] = [];
-				}
-
-				methods.push(method);
-			};
-
-			self.off = off = function(methodName, method) {
-				//REQUIRED: methodName
-				//OPTIONAL: method
-
-				var
-				// methods
-				methods = methodMap[methodName];
-
-				if (methods !== undefined) {
-
-					if (method !== undefined) {
-
-						CONNECT_TO_ROOM_SERVER.off({
-							roomServerName : roomServerName,
-							methodName : roomName + '/' + methodName
-						}, method);
-
-						REMOVE({
-							array : methods,
-							value : method
-						});
-
-						if (methods.length === 0) {
-							delete methodMap[methodName];
-						}
-
-					} else {
-
-						EACH(methods, function(method) {
-							CONNECT_TO_ROOM_SERVER.off({
-								roomServerName : roomServerName,
-								methodName : roomName + '/' + methodName
-							}, method);
-						});
-						delete methodMap[methodName];
-					}
-				}
-			};
-
-			self.send = send = function(params, callback) {
-				//REQUIRED: params
-				//REQUIRED: params.methodName
-				//REQUIRED: params.data
-				//OPTIONAL: callback
-
-				if (isExited !== true) {
-
-					CONNECT_TO_ROOM_SERVER.send({
-						roomServerName : roomServerName,
-						methodName : roomName + '/' + params.methodName,
-						data : params.data
-					}, callback);
-
-				} else {
-					console.log('[UPPERCASE-ROOM] `ROOM.send` ERROR! ROOM EXITED!');
-				}
-			};
-
-			self.exit = exit = function() {
-
-				if (isExited !== true) {
-
-					CONNECT_TO_ROOM_SERVER.exitRoom({
-						roomServerName : roomServerName,
-						roomName : roomName
-					});
-
-					EACH(methodMap, function(methods, methodName) {
-						off(methodName);
-					});
-
-					// free method map.
-					methodMap = undefined;
-
-					isExited = true;
-				}
-			};
-		}
-	});
-});
-
 /*
- * connect to room server.
+ * 룸 서버에 접속합니다.
  */
-global.CONNECT_TO_ROOM_SERVER = METHOD(function(m) {
-	'use strict';
+global.CONNECT_TO_ROOM_SERVER = METHOD((m) => {
 
-	var
-	// DEFAULT_ROOM_SERVER_NAME
-	DEFAULT_ROOM_SERVER_NAME = '__',
+	const DEFAULT_ROOM_SERVER_NAME = '__';
 	
-	// enter room name map
-	enterRoomNameMap = {},
-
-	// on info map
-	onInfoMap = {},
-
-	// waiting send info map
-	waitingSendInfoMap = {},
-
-	// is connecteds
-	isConnecteds = {},
-
-	// inner ons
-	innerOns = {},
-
-	// inner offs
-	innerOffs = {},
-
-	// inner sends
-	innerSends = {},
+	let enterRoomNameMap = {};
+	let onInfoMap = {};
+	let waitingSendInfoMap = {};
+	let isConnecteds = {};
+	let innerOns = {};
+	let innerOffs = {};
+	let innerSends = {};
 	
-	// check is connected.
-	checkIsConnected,
-
-	// enter room.
-	enterRoom,
-
-	// on.
-	on,
-
-	// off.
-	off,
-
-	// send.
-	send,
-
-	// exit room.
-	exitRoom;
-	
-	m.checkIsConnected = checkIsConnected = function(roomServerName) {
+	let checkIsConnected = m.checkIsConnected = (roomServerName) => {
 		//OPTIONAL: roomServerName
 		
 		if (roomServerName === undefined) {
@@ -232,26 +33,19 @@ global.CONNECT_TO_ROOM_SERVER = METHOD(function(m) {
 		return isConnecteds[roomServerName];
 	};
 
-	m.enterRoom = enterRoom = function(params) {
+	let enterRoom = m.enterRoom = (params) => {
 		//REQUIRED: params
 		//OPTIONAL: params.roomServerName
 		//REQUIRED: params.roomName
 		
-		var
-		// room server name
-		roomServerName = params.roomServerName,
-		
-		// room name
-		roomName = params.roomName,
-		
-		// enter room names
-		enterRoomNames;
+		let roomServerName = params.roomServerName;
+		let roomName = params.roomName;
 		
 		if (roomServerName === undefined) {
 			roomServerName = DEFAULT_ROOM_SERVER_NAME;
 		}
 		
-		enterRoomNames = enterRoomNameMap[roomServerName];
+		let enterRoomNames = enterRoomNameMap[roomServerName];
 		
 		if (enterRoomNames === undefined) {
 			enterRoomNames = enterRoomNameMap[roomServerName] = [];
@@ -267,27 +61,20 @@ global.CONNECT_TO_ROOM_SERVER = METHOD(function(m) {
 		}
 	};
 
-	m.on = on = function(params, method) {
+	let on = m.on = (params, method) => {
 		//REQUIRED: params
 		//OPTIONAL: params.roomServerName
 		//REQUIRED: params.methodName
 		//REQUIRED: method
 		
-		var
-		// room server name
-		roomServerName = params.roomServerName,
-		
-		// method name
-		methodName = params.methodName,
-		
-		// on infos
-		onInfos;
+		let roomServerName = params.roomServerName;
+		let methodName = params.methodName;
 		
 		if (roomServerName === undefined) {
 			roomServerName = DEFAULT_ROOM_SERVER_NAME;
 		}
 		
-		onInfos = onInfoMap[roomServerName];
+		let onInfos = onInfoMap[roomServerName];
 		
 		if (onInfos === undefined) {
 			onInfos = onInfoMap[roomServerName] = [];
@@ -303,27 +90,20 @@ global.CONNECT_TO_ROOM_SERVER = METHOD(function(m) {
 		}
 	};
 
-	m.off = off = function(params, method) {
+	let off = m.off = (params, method) => {
 		//REQUIRED: params
 		//OPTIONAL: params.roomServerName
 		//REQUIRED: params.methodName
 		//OPTIONAL: method
 		
-		var
-		// room server name
-		roomServerName = params.roomServerName,
-		
-		// method name
-		methodName = params.methodName,
-		
-		// on infos
-		onInfos;
+		let roomServerName = params.roomServerName;
+		let methodName = params.methodName;
 		
 		if (roomServerName === undefined) {
 			roomServerName = DEFAULT_ROOM_SERVER_NAME;
 		}
 		
-		onInfos = onInfoMap[roomServerName];
+		let onInfos = onInfoMap[roomServerName];
 		
 		if (innerOffs[roomServerName] !== undefined) {
 			innerOffs[roomServerName](methodName, method);
@@ -333,13 +113,13 @@ global.CONNECT_TO_ROOM_SERVER = METHOD(function(m) {
 
 			if (method !== undefined) {
 	
-				REMOVE(onInfos, function(onInfo) {
+				REMOVE(onInfos, (onInfo) => {
 					return onInfo.methodName === methodName && onInfo.method === method;
 				});
 	
 			} else {
 	
-				REMOVE(onInfos, function(onInfo) {
+				REMOVE(onInfos, (onInfo) => {
 					return onInfo.methodName === methodName;
 				});
 			}
@@ -350,25 +130,16 @@ global.CONNECT_TO_ROOM_SERVER = METHOD(function(m) {
 		}
 	};
 
-	m.send = send = function(params, callback) {
+	let send = m.send = (params, callback) => {
 		//REQUIRED: params
 		//OPTIONAL: params.roomServerName
 		//REQUIRED: params.methodName
 		//REQUIRED: params.data
 		//OPTIONAL: callback
 		
-		var
-		// room server name
-		roomServerName = params.roomServerName,
-		
-		// method name
-		methodName = params.methodName,
-		
-		// data
-		data = params.data,
-		
-		// waiting send infos
-		waitingSendInfos;
+		let roomServerName = params.roomServerName;
+		let methodName = params.methodName;
+		let data = params.data;
 		
 		if (roomServerName === undefined) {
 			roomServerName = DEFAULT_ROOM_SERVER_NAME;
@@ -376,7 +147,7 @@ global.CONNECT_TO_ROOM_SERVER = METHOD(function(m) {
 
 		if (innerSends[roomServerName] === undefined) {
 			
-			waitingSendInfos = waitingSendInfoMap[roomServerName];
+			let waitingSendInfos = waitingSendInfoMap[roomServerName];
 		
 			if (waitingSendInfos === undefined) {
 				waitingSendInfos = waitingSendInfoMap[roomServerName] = [];
@@ -399,26 +170,19 @@ global.CONNECT_TO_ROOM_SERVER = METHOD(function(m) {
 		}
 	};
 
-	m.exitRoom = exitRoom = function(params) {
+	let exitRoom = m.exitRoom = (params) => {
 		//REQUIRED: params
 		//OPTIONAL: params.roomServerName
 		//REQUIRED: params.roomName
 		
-		var
-		// room server name
-		roomServerName = params.roomServerName,
-		
-		// room name
-		roomName = params.roomName,
-		
-		// enter room names
-		enterRoomNames;
+		let roomServerName = params.roomServerName;
+		let roomName = params.roomName;
 		
 		if (roomServerName === undefined) {
 			roomServerName = DEFAULT_ROOM_SERVER_NAME;
 		}
 		
-		enterRoomNames = enterRoomNameMap[roomServerName];
+		let enterRoomNames = enterRoomNameMap[roomServerName];
 		
 		if (enterRoomNames === undefined) {
 			enterRoomNames = enterRoomNameMap[roomServerName] = [];
@@ -431,7 +195,7 @@ global.CONNECT_TO_ROOM_SERVER = METHOD(function(m) {
 			});
 		}
 		
-		EACH(enterRoomNames, function(enterRoomName, key) {
+		EACH(enterRoomNames, (enterRoomName, key) => {
 
 			if (enterRoomName === roomName) {
 
@@ -447,29 +211,23 @@ global.CONNECT_TO_ROOM_SERVER = METHOD(function(m) {
 
 	return {
 
-		run : function(params, connectionListenerOrListeners) {
+		run : (params, connectionListenerOrListeners) => {
 			//REQUIRED: params
-			//OPTIONAL: params.name
+			//OPTIONAL: params.roomServerName
 			//OPTIONAL: params.isSecure
 			//OPTIONAL: params.host
 			//REQUIRED: params.port
-			//OPTIONAL: params.fixRequestURI
 			//OPTIONAL: connectionListenerOrListeners
 			//OPTIONAL: connectionListenerOrListeners.success
 			//OPTIONAL: connectionListenerOrListeners.error
 
-			var
-			// name
-			name = params.name,
+			let roomServerName = params.roomServerName;
 			
-			// connection listener
-			connectionListener,
-
-			// error listener
-			errorListener;
+			let connectionListener;
+			let errorListener;
 			
-			if (name === undefined) {
-				name = DEFAULT_ROOM_SERVER_NAME;
+			if (roomServerName === undefined) {
+				roomServerName = DEFAULT_ROOM_SERVER_NAME;
 			}
 
 			if (connectionListenerOrListeners !== undefined) {
@@ -484,30 +242,23 @@ global.CONNECT_TO_ROOM_SERVER = METHOD(function(m) {
 			CONNECT_TO_WEB_SOCKET_SERVER({
 				isSecure : params.isSecure,
 				host : params.host,
-				port : params.port,
-				fixRequestURI : params.fixRequestURI
+				port : params.port
 			}, {
 
 				error : errorListener,
 
-				success : function(on, off, send) {
+				success : (on, off, send) => {
 					
-					var
-					// enter room names
-					enterRoomNames = enterRoomNameMap[name],
-					
-					// on infos
-					onInfos = onInfoMap[name],
-					
-					// waiting send infos
-					waitingSendInfos = waitingSendInfoMap[name];
+					let enterRoomNames = enterRoomNameMap[roomServerName];
+					let onInfos = onInfoMap[roomServerName];
+					let waitingSendInfos = waitingSendInfoMap[roomServerName];
 
-					innerOns[name] = on;
-					innerOffs[name] = off;
-					innerSends[name] = send;
+					innerOns[roomServerName] = on;
+					innerOffs[roomServerName] = off;
+					innerSends[roomServerName] = send;
 
 					if (enterRoomNames !== undefined) {
-						EACH(enterRoomNames, function(roomName) {
+						EACH(enterRoomNames, (roomName) => {
 							send({
 								methodName : '__ENTER_ROOM',
 								data : roomName
@@ -516,35 +267,181 @@ global.CONNECT_TO_ROOM_SERVER = METHOD(function(m) {
 					}
 
 					if (onInfos !== undefined) {
-						EACH(onInfos, function(onInfo) {
+						EACH(onInfos, (onInfo) => {
 							on(onInfo.methodName, onInfo.method);
 						});
 					}
 					
 					if (waitingSendInfos !== undefined) {
-						EACH(waitingSendInfos, function(sendInfo) {
+						EACH(waitingSendInfos, (sendInfo) => {
 							send(sendInfo.params, sendInfo.callback);
 						});
 					}
-					delete waitingSendInfoMap[name];
+					delete waitingSendInfoMap[roomServerName];
 
 					if (connectionListener !== undefined) {
 						connectionListener(on, off, send);
 					}
 					
-					isConnecteds[name] = true;
+					isConnecteds[roomServerName] = true;
 
 					// when disconnected, rewait.
-					on('__DISCONNECTED', function() {
+					on('__DISCONNECTED', () => {
 
-						delete innerOns[name];
-						delete innerOffs[name];
-						delete innerSends[name];
+						delete innerOns[roomServerName];
+						delete innerOffs[roomServerName];
+						delete innerSends[roomServerName];
 						
-						isConnecteds[name] = false;
+						isConnecteds[roomServerName] = false;
 					});
 				}
 			});
 		}
 	};
+});
+
+FOR_BOX((box) => {
+
+	/*
+	 * 서버에 생성된 룸과 통신을 주고받는 ROOM 클래스
+	 */
+	box.ROOM = CLASS({
+
+		init : (inner, self, nameOrParams) => {
+			//REQUIRED: nameOrParams
+			//OPTIONAL: nameOrParams.roomServerName
+			//REQUIRED: nameOrParams.name
+
+			let roomServerName;
+			let roomName;
+
+			let methodMap = {};
+
+			let isExited;
+			
+			if (CHECK_IS_DATA(nameOrParams) !== true) {
+				roomName = box.boxName + '/' + nameOrParams;
+			} else {
+				roomServerName = nameOrParams.roomServerName;
+				roomName = box.boxName + '/' + nameOrParams.name;
+			}
+
+			CONNECT_TO_ROOM_SERVER.enterRoom({
+				roomServerName : roomServerName,
+				roomName : roomName
+			});
+
+			let getRoomName = inner.getRoomName = () => {
+				return roomName;
+			};
+
+			let checkIsExited = inner.checkIsExited = () => {
+				return isExited;
+			};
+
+			let on = self.on = (methodName, method) => {
+				//REQUIRED: methodName
+				//REQUIRED: method
+
+				let methods = methodMap[methodName];
+
+				CONNECT_TO_ROOM_SERVER.on({
+					roomServerName : roomServerName,
+					methodName : roomName + '/' + methodName
+				}, method);
+
+				if (methods === undefined) {
+					methods = methodMap[methodName] = [];
+				}
+
+				methods.push(method);
+			};
+
+			let off = self.off = (methodName, method) => {
+				//REQUIRED: methodName
+				//OPTIONAL: method
+
+				let methods = methodMap[methodName];
+
+				if (methods !== undefined) {
+
+					if (method !== undefined) {
+
+						CONNECT_TO_ROOM_SERVER.off({
+							roomServerName : roomServerName,
+							methodName : roomName + '/' + methodName
+						}, method);
+
+						REMOVE({
+							array : methods,
+							value : method
+						});
+
+						if (methods.length === 0) {
+							delete methodMap[methodName];
+						}
+
+					} else {
+
+						EACH(methods, (method) => {
+							CONNECT_TO_ROOM_SERVER.off({
+								roomServerName : roomServerName,
+								methodName : roomName + '/' + methodName
+							}, method);
+						});
+						delete methodMap[methodName];
+					}
+				}
+			};
+
+			let send = self.send = (methodNameOrParams, callback) => {
+				//REQUIRED: methodNameOrParams
+				//REQUIRED: methodNameOrParams.methodName
+				//OPTIONAL: methodNameOrParams.data
+				//OPTIONAL: callback
+				
+				let methodName;
+				let data;
+				
+				if (CHECK_IS_DATA(methodNameOrParams) !== true) {
+					methodName = methodNameOrParams;
+				} else {
+					methodName = methodNameOrParams.methodName;
+					data = methodNameOrParams.data;
+				}
+
+				if (isExited !== true) {
+
+					CONNECT_TO_ROOM_SERVER.send({
+						roomServerName : roomServerName,
+						methodName : roomName + '/' + methodName,
+						data : data
+					}, callback);
+
+				} else {
+					SHOW_ERROR(box.boxName + '.' + roomName + 'Room.send', 'ROOM EXITED.');
+				}
+			};
+
+			let exit = self.exit = () => {
+
+				if (isExited !== true) {
+
+					CONNECT_TO_ROOM_SERVER.exitRoom({
+						roomServerName : roomServerName,
+						roomName : roomName
+					});
+
+					EACH(methodMap, (methods, methodName) => {
+						off(methodName);
+					});
+
+					// free method map.
+					methodMap = undefined;
+
+					isExited = true;
+				}
+			};
+		}
+	});
 });
