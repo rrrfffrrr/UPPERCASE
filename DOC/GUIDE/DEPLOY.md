@@ -1,6 +1,6 @@
 작성중
 
-# 배포하기
+# 프로젝트 배포하기
 
 1. 우선, 프로젝트를 배포할 서버를 준비합니다.
 
@@ -181,7 +181,7 @@ UPPERCASE의 파일 처리 기능이나 IMAGEMAGICK 관련 기능을 사용할 �
 vi /etc/security/limits.conf
 ```
 
-이 파일의 맨 끝에 다음과 같은 내용을 추가합니다.
+이 파일의 맨 끝에 다음과 같은 내용을 추가합니다. (만약 유저가 root가 아니라면, root를 유저명으로 변경해주시기 바랍니다.)
 ```
 root hard nofile 65535
 root soft nofile 65535
@@ -221,5 +221,3 @@ ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime
 rdate -p time.bora.net
 rdate -s time.bora.net
 ```
-
-다음 문서: [UPPERCASE 업데이트](UPDATE.md)

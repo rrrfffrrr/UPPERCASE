@@ -78,7 +78,7 @@ WRITE_FILE({
 ```
 
 ### `READ_FILE`
-파일의 내용을 불러옵니다. 내용을 `Buffer`형으로 불러오기 때문에, 내용을 문자열로 불러오려면 `toString` 함수를 이용하시기 바랍니다.
+파일의 내용을 불러옵니다. 내용을 `Buffer`형으로 불러오기 때문에, 내용을 문자열로 불러오려면 `toString` 메소드를 이용하시기 바랍니다.
 
 사용 가능한 형태들은 다음과 같습니다.
 * `READ_FILE(path, (buffer) => {})`
@@ -102,7 +102,7 @@ READ_FILE('some.txt', {
 ```
 
 ### `GET_FILE_INFO`
-파일의 정보를 불러옵니다. 파일의 크기(`size`), 생성 시간(`createTime`), 최종 수정 시간(`lastUpdateTime`)을 불러옵니다.
+파일이나 폴더의 정보를 불러옵니다. 파일의 경우 파일의 크기(`size`), 생성 시간(`createTime`), 최종 수정 시간(`lastUpdateTime`)을, 폴더의 경우 생성 시간(`createTime`), 최종 수정 시간(`lastUpdateTime`)을 불러옵니다.
 
 사용 가능한 형태들은 다음과 같습니다.
 * `GET_FILE_INFO(path, (info) => {})`
@@ -120,7 +120,11 @@ GET_FILE_INFO('some.txt', {
 		console.log('오류가 발생했습니다. 오류 메시지: ' + errorMsg);
 	},
 	success : (info) => {
-		console.log('파일의 크기: ' + info.size + ' 바이트');
+		
+		if (info.size !== undefined) {
+			console.log('파일의 크기: ' + info.size + ' 바이트');
+		}
+		
 		console.log('파일의 생성 시간: ' + info.createTime);
 		console.log('파일의 최종 수정 시간: ' + info.lastUpdateTime);
 	}
@@ -155,7 +159,7 @@ COPY_FILE({
 ```
 
 ### `MOVE_FILE`
-파일의 위치를 이동시킵니다.
+파일이나 폴더의 위치를 이동시킵니다.
 
 사용 가능한 형태들은 다음과 같습니다.
 * `MOVE_FILE({from:, to:}, () => {})`
@@ -237,6 +241,33 @@ CREATE_FOLDER('SomeFolder', {
 	},
 	success : () => {
 		console.log('폴더를 생성했습니다.');
+	}
+});
+```
+
+### `COPY_FOLDER`
+폴더를 복사합니다.
+
+사용 가능한 형태들은 다음과 같습니다.
+* `COPY_FOLDER({from:, to:}, () => {})`
+* `COPY_FOLDER({from:, to:}, {notExists:, success:})`
+* `COPY_FOLDER({from:, to:}, {error:, success:})`
+* `COPY_FOLDER({from:, to:}, {notExists:, error:, success:})`
+* `COPY_FOLDER({from:, to:, isSync: true})`
+
+```javascript
+COPY_FOLDER({
+	from : 'from',
+	to : 'to'
+}, {
+	notExists : () => {
+		console.log('폴더가 존재하지 않습니다.');
+	},
+	error : (errorMsg) => {
+		console.log('오류가 발생했습니다. 오류 메시지: ' + errorMsg);
+	},
+	success : () => {
+		console.log('폴더를 복사했습니다.');
 	}
 });
 ```
@@ -667,7 +698,7 @@ WEB_SERVER(8123, (requestInfo, response) => {
 * `contentType` 응답하는 컨텐츠의 종류
 * `buffer` 응답 내용을 `Buffer`형으로 전달
 * `content` 응답 내용을 문자열로 전달
-* `stream` [`fs.createReadStream`](https://nodejs.org/api/fs.html#fs_fs_createreadstream_path_options)와 같은 함수로 스트림을 생성한 경우, 스트림을 응답으로 전달할 수 있습니다.
+* `stream` [`fs.createReadStream`](https://nodejs.org/api/fs.html#fs_fs_createreadstream_path_options)와 같은 메소드로 스트림을 생성한 경우, 스트림을 응답으로 전달할 수 있습니다.
 * `totalSize` `stream`으로 응답을 전달하는 경우 스트림의 전체 길이
 * `startPosition` `stream`으로 응답을 전달하는 경우 전달할 시작 위치
 * `endPosition` `stream`으로 응답을 전달하는 경우 전달할 끝 위치
@@ -770,7 +801,10 @@ WEB_SERVER({
 		// requestInfo		요청 정보
 		// response			응답 함수
 		
-		response('업로드 가능한 용량은 최대 ' + maxUploadFileMB + 'MB 입니다.');
+		response({
+			statusCode : 413,
+			content : '업로드 가능한 용량은 최대 ' + maxUploadFileMB + 'MB 입니다.'
+		});
 	},
 	uploadSuccess : (params, fileDataSet, requestInfo, response) => {
 		// params		파라미터
@@ -829,19 +863,19 @@ SOCKET_SERVER(8124, (clientInfo, on, off, send, disconnect) => {
 });
 ```
 
-소켓 서버 내에서 사용하는 함수들은 다음과 같습니다.
+소켓 서버 내에서 사용하는 메소드들은 다음과 같습니다.
 
 #### `on(methodName, method)`
-`on` 함수는 소켓 서버 내 메소드를 생성하는 함수로써, 클라이언트에서 `send` 함수로 전송한 데이터를 받습니다.
+`on`은 소켓 서버 내 메소드를 생성하며, 클라이언트에서 `send`로 전송한 데이터를 받습니다.
 
 #### `off(methodName)` `off(methodName, method)`
-`off` 함수는 소켓 서버 내 생성된 메소드를 제거합니다.
+`off`는 소켓 서버 내 생성된 메소드를 제거합니다.
 
 #### `send(params)` `send(params, callback)`
-`send`는 클라이언트로 데이터를 전송하며, 클라이언트에서 `on` 함수로 생성한 메소드가 데이터를 받습니다.
+`send`는 클라이언트로 데이터를 전송하며, 클라이언트에서 `on`으로 생성한 메소드가 데이터를 받습니다.
 
 사용 가능한 파라미터는 다음과 같습니다.
-* `methodName` 클라이언트에 `on` 함수로 설정된 메소드 이름
+* `methodName` 클라이언트에 `on`으로 설정된 메소드 이름
 * `data` 전송할 데이터
 
 #### `disconnect()`
@@ -881,19 +915,19 @@ CONNECT_TO_SOCKET_SERVER({
 });
 ```
 
-클라이언트에서 사용하는 함수들은 다음과 같습니다.
+클라이언트에서 사용하는 메소드들은 다음과 같습니다.
 
 #### `on(methodName, method)`
-`on` 함수는 클라이언트에 메소드를 생성하는 함수로써, 서버에서 `send` 함수로 전송한 데이터를 받습니다.
+`on`은 클라이언트에 메소드를 생성하며, 서버에서 `send`로 전송한 데이터를 받습니다.
 
 #### `off(methodName)` `off(methodName, method)`
-`off` 함수는 클라이언트에 생성된 메소드를 제거합니다.
+`off`는 클라이언트에 생성된 메소드를 제거합니다.
 
 #### `send(params)` `send(params, callback)`
-`send`는 서버로 데이터를 전송하며, 서버에서 `on` 함수로 생성한 메소드가 데이터를 받습니다.
+`send`는 서버로 데이터를 전송하며, 서버에서 `on`으로 생성한 메소드가 데이터를 받습니다.
 
 사용 가능한 파라미터는 다음과 같습니다.
-* `methodName` 서버에 `on` 함수로 설정된 메소드 이름
+* `methodName` 서버에 `on`으로 설정된 메소드 이름
 * `data` 전송할 데이터
 
 #### `disconnect()`
@@ -927,19 +961,19 @@ WEB_SOCKET_SERVER(WEB_SERVER(8125), (clientInfo, on, off, send, disconnect) => {
 });
 ```
 
-웹소켓 서버 내에서 사용하는 함수들은 다음과 같습니다.
+웹소켓 서버 내에서 사용하는 메소드들은 다음과 같습니다.
 
 #### `on(methodName, method)`
-`on` 함수는 웹소켓 서버 내 메소드를 생성하는 함수로써, 클라이언트에서 `send` 함수로 전송한 데이터를 받습니다.
+`on`은 웹소켓 서버 내 메소드를 생성하며, 클라이언트에서 `send`로 전송한 데이터를 받습니다.
 
 #### `off(methodName)` `off(methodName, method)`
-`off` 함수는 웹소켓 서버 내 생성된 메소드를 제거합니다.
+`off`는 웹소켓 서버 내 생성된 메소드를 제거합니다.
 
 #### `send(params)` `send(params, callback)`
-`send`는 클라이언트로 데이터를 전송하며, 클라이언트에서 `on` 함수로 생성한 메소드가 데이터를 받습니다.
+`send`는 클라이언트로 데이터를 전송하며, 클라이언트에서 `on`으로 생성한 메소드가 데이터를 받습니다.
 
 사용 가능한 파라미터는 다음과 같습니다.
-* `methodName` 클라이언트에 `on` 함수로 설정된 메소드 이름
+* `methodName` 클라이언트에 `on`으로 설정된 메소드 이름
 * `data` 전송할 데이터
 
 #### `disconnect()`
@@ -974,19 +1008,19 @@ MULTI_PROTOCOL_SOCKET_SERVER({
 });
 ```
 
-서버 내에서 사용하는 함수들은 다음과 같습니다.
+서버 내에서 사용하는 메소드들은 다음과 같습니다.
 
 #### `on(methodName, method)`
-`on` 함수는 서버 내 메소드를 생성하는 함수로써, 클라이언트에서 `send` 함수로 전송한 데이터를 받습니다.
+`on`은 서버 내 메소드를 생성하며, 클라이언트에서 `send`로 전송한 데이터를 받습니다.
 
 #### `off(methodName)` `off(methodName, method)`
-`off` 함수는 서버 내 생성된 메소드를 제거합니다.
+`off`는 서버 내 생성된 메소드를 제거합니다.
 
 #### `send(params)` `send(params, callback)`
-`send`는 클라이언트로 데이터를 전송하며, 클라이언트에서 `on` 함수로 생성한 메소드가 데이터를 받습니다.
+`send`는 클라이언트로 데이터를 전송하며, 클라이언트에서 `on`으로 생성한 메소드가 데이터를 받습니다.
 
 사용 가능한 파라미터는 다음과 같습니다.
-* `methodName` 클라이언트에 `on` 함수로 설정된 메소드 이름
+* `methodName` 클라이언트에 `on`으로 설정된 메소드 이름
 * `data` 전송할 데이터
 
 #### `disconnect()`
@@ -1037,7 +1071,7 @@ CPU_CLUSTERING(() => {
 });
 ```
 
-클러스터링에 대한 자세한 내용은 [클러스터링 문서](CLUSTERING.md)를 참고해 주시기 바랍니다.
+분산 처리에 대한 자세한 내용은 [분산 처리 문서](CLUSTERING.md)를 참고해 주시기 바랍니다.
 
 ### `SERVER_CLUSTERING({hosts:, thisServerName:, port:}, work)`
 서버 간 클러스터링을 수행합니다.
@@ -1056,7 +1090,7 @@ SERVER_CLUSTERING({
 	// 현재 서버의 이름 지정
 	thisServerName : 'serverA',
 	
-	// 클러스터링을 위한 포트 번호 지정
+	// 프로세스간 통신을 위한 포트 번호 지정
 	port : 8125
 	
 }, () => {
@@ -1066,7 +1100,7 @@ SERVER_CLUSTERING({
 });
 ```
 
-클러스터링에 대한 자세한 내용은 [클러스터링 문서](CLUSTERING.md)를 참고해 주시기 바랍니다.
+분산 처리에 대한 자세한 내용은 [분산 처리 문서](CLUSTERING.md)를 참고해 주시기 바랍니다.
 
 ### `SHARED_STORE(storeName)`
 클러스터링 공유 저장소를 생성하는 클래스
@@ -1119,7 +1153,7 @@ CPU_CLUSTERING(() => {
 });
 ```
 
-`SHARED_STORE`로 생성한 객체의 함수들은 다음과 같습니다.
+`SHARED_STORE`로 생성한 객체의 메소드들은 다음과 같습니다.
 
 #### `save`
 * `save({id:, data:}, (savedData) => {})`

@@ -268,6 +268,8 @@ global.CLASS = METHOD((m) => {
 			cls.id = getNextInstanceId();
 
 			let innerInit = cls.innerInit = (inner, self, params, funcs) => {
+				//REQUIRED: inner
+				//REQUIRED: self
 				//OPTIONAL: params
 				//OPTIONAL: funcs
 				
@@ -323,7 +325,7 @@ global.CLASS = METHOD((m) => {
 							mom.innerInit(inner, self, params, funcs);
 						}
 
-						// when mon's type is OBJECT
+						// when mom's type is OBJECT
 						else {
 							mom.type.innerInit(inner, self, params, funcs);
 						}
@@ -338,6 +340,8 @@ global.CLASS = METHOD((m) => {
 			};
 
 			let innerAfterInit = cls.innerAfterInit = (inner, self, params, funcs) => {
+				//REQUIRED: inner
+				//REQUIRED: self
 				//OPTIONAL: params
 				//OPTIONAL: funcs
 
@@ -379,7 +383,7 @@ global.INIT_OBJECTS = METHOD({
 });
 
 /*
- * 실글톤 객체를 생성합니다.
+ * 싱글톤 객체를 생성합니다.
  */
 global.OBJECT = METHOD((m) => {
 
@@ -470,17 +474,17 @@ global.OBJECT = METHOD((m) => {
  */
 global.NEXT = METHOD({
 
-	run : (countOrArray, funcs) => {
+	run : (countOrArray, funcOrFuncs) => {
 		//OPTIONAL: countOrArray
-		//REQUIRED: funcs
+		//REQUIRED: funcOrFuncs
 
 		let count;
 		let array;
 		
 		let f;
 		
-		if (funcs === undefined) {
-			funcs = countOrArray;
+		if (funcOrFuncs === undefined) {
+			funcOrFuncs = countOrArray;
 			countOrArray = undefined;
 		}
 
@@ -491,7 +495,14 @@ global.NEXT = METHOD({
 				array = countOrArray;
 			}
 		}
-
+		
+		let funcs;
+		if (CHECK_IS_ARRAY(funcOrFuncs) !== true) {
+			funcs = [funcOrFuncs];
+		} else {
+			funcs = funcOrFuncs;
+		}
+		
 		REPEAT({
 			start : funcs.length - 1,
 			end : 0
@@ -787,13 +798,24 @@ global.STRINGIFY = METHOD({
 		
 		else if (CHECK_IS_ARRAY(data) === true) {
 			
-			let array = [];
+			let f = (array) => {
+				
+				let newArray = [];
+				
+				EACH(array, (data) => {
+					if (CHECK_IS_DATA(data) === true) {
+						newArray.push(PACK_DATA(data));
+					} else if (CHECK_IS_ARRAY(data) === true) {
+						newArray.push(f(data));
+					} else {
+						newArray.push(data);
+					}
+				});
+				
+				return newArray;
+			};
 			
-			EACH(data, (data) => {
-				array.push(PACK_DATA(data));
-			});
-			
-			return JSON.stringify(array);
+			return JSON.stringify(f(data));
 		}
 		
 		else {
@@ -2336,11 +2358,11 @@ global.LOOP = CLASS((cls) => {
 
 		if (animationInterval === undefined) {
 
-			let beforeTime = Date.now();
+			let beforeTime = Date.now() / 1000;
 
 			animationInterval = INTERVAL(() => {
 
-				let time = Date.now();
+				let time = Date.now() / 1000;
 				let deltaTime = time - beforeTime;
 				
 				if (deltaTime > 0) {
@@ -2357,7 +2379,7 @@ global.LOOP = CLASS((cls) => {
 							}
 
 							// calculate count.
-							let count = parseInt(loopInfo.fps / (1000 / deltaTime) * (loopInfo.timeSigma / deltaTime + 1), 10) - loopInfo.countSigma;
+							let count = parseInt(loopInfo.fps * deltaTime * (loopInfo.timeSigma / deltaTime + 1), 10) - loopInfo.countSigma;
 
 							// start.
 							if (loopInfo.start !== undefined) {
@@ -2881,6 +2903,10 @@ global.CPU_CLUSTERING = METHOD((m) => {
 
 	let getWorkerId = m.getWorkerId = () => {
 		return thisWorkerId;
+	};
+
+	let checkIsMaster = m.checkIsMaster = () => {
+		return Cluster.isMaster;
 	};
 
 	return {
@@ -3669,7 +3695,6 @@ global.SHARED_STORE = CLASS((cls) => {
 
 	let storages = {};
 	let removeDelayMap = {};
-	let getWorkerIdByStoreName;
 	
 	let getStorages = cls.getStorages = () => {
 		return storages;
@@ -4766,75 +4791,54 @@ global.COPY_FILE = METHOD(() => {
 					callback = callbackOrHandlers.success;
 				}
 			}
-
-			CREATE_FOLDER({
-				path : Path.dirname(to),
-				isSync : isSync
-			}, {
-
-				error : errorHandler,
-
-				success : () => {
-
-					// when normal mode
-					if (isSync !== true) {
-
-						CHECK_FILE_EXISTS(from, (isExists) => {
-
-							if (isExists === true) {
-
-								let reader = FS.createReadStream(from);
-
-								reader.pipe(FS.createWriteStream(to));
-
-								reader.on('error', (error) => {
-
-									let errorMsg = error.toString();
-
-									if (errorHandler !== undefined) {
-										errorHandler(errorMsg);
-									} else {
-										SHOW_ERROR('COPY_FILE', errorMsg);
-									}
-								});
-
-								reader.on('end', () => {
-									if (callback !== undefined) {
-										callback();
-									}
-								});
-
-							} else {
-
-								if (notExistsHandler !== undefined) {
-									notExistsHandler(from);
-								} else {
-									SHOW_WARNING('COPY_FILE', MSG({
-										ko : '파일이 존재하지 않습니다.'
-									}), {
-										from : from
+			
+			if (from === to) {
+				if (callback !== undefined) {
+					callback();
+				}
+			}
+			
+			else {
+				
+				CREATE_FOLDER({
+					path : Path.dirname(to),
+					isSync : isSync
+				}, {
+	
+					error : errorHandler,
+	
+					success : () => {
+	
+						// when normal mode
+						if (isSync !== true) {
+	
+							CHECK_FILE_EXISTS(from, (isExists) => {
+	
+								if (isExists === true) {
+	
+									let reader = FS.createReadStream(from);
+	
+									reader.pipe(FS.createWriteStream(to));
+	
+									reader.on('error', (error) => {
+	
+										let errorMsg = error.toString();
+	
+										if (errorHandler !== undefined) {
+											errorHandler(errorMsg);
+										} else {
+											SHOW_ERROR('COPY_FILE', errorMsg);
+										}
 									});
-								}
-							}
-						});
-					}
-
-					// when sync mode
-					else {
-
-						RUN(() => {
-
-							try {
-
-								if (CHECK_FILE_EXISTS({
-									path : from,
-									isSync : true
-								}) === true) {
-
-									FS.writeFileSync(to, FS.readFileSync(from));
-
+	
+									reader.on('end', () => {
+										if (callback !== undefined) {
+											callback();
+										}
+									});
+	
 								} else {
-
+	
 									if (notExistsHandler !== undefined) {
 										notExistsHandler(from);
 									} else {
@@ -4844,32 +4848,245 @@ global.COPY_FILE = METHOD(() => {
 											from : from
 										});
 									}
-
-									// do not run callback.
-									return;
 								}
-
-							} catch(error) {
-
-								if (error !== TO_DELETE) {
-
-									let errorMsg = error.toString();
-
-									if (errorHandler !== undefined) {
-										errorHandler(errorMsg);
+							});
+						}
+	
+						// when sync mode
+						else {
+	
+							RUN(() => {
+	
+								try {
+	
+									if (CHECK_FILE_EXISTS({
+										path : from,
+										isSync : true
+									}) === true) {
+	
+										FS.writeFileSync(to, FS.readFileSync(from));
+	
 									} else {
-										SHOW_ERROR('COPY_FILE', errorMsg);
+	
+										if (notExistsHandler !== undefined) {
+											notExistsHandler(from);
+										} else {
+											SHOW_WARNING('COPY_FILE', MSG({
+												ko : '파일이 존재하지 않습니다.'
+											}), {
+												from : from
+											});
+										}
+	
+										// do not run callback.
+										return;
+									}
+	
+								} catch(error) {
+	
+									if (error !== TO_DELETE) {
+	
+										let errorMsg = error.toString();
+	
+										if (errorHandler !== undefined) {
+											errorHandler(errorMsg);
+										} else {
+											SHOW_ERROR('COPY_FILE', errorMsg);
+										}
 									}
 								}
-							}
-
-							if (callback !== undefined) {
-								callback();
-							}
-						});
+	
+								if (callback !== undefined) {
+									callback();
+								}
+							});
+						}
 					}
+				});
+			}
+		}
+	};
+});
+
+/*
+ * 폴더를 복사합니다.
+ */
+global.COPY_FOLDER = METHOD(() => {
+
+	let FS = require('fs');
+
+	return {
+
+		run : (params, callbackOrHandlers) => {
+			//REQUIRED: params
+			//REQUIRED: params.from		복사할 폴더의 위치
+			//REQUIRED: params.to		폴더를 복사할 위치
+			//OPTIONAL: params.isSync	true로 설정하면 callback을 실행하지 않고 즉시 실행합니다. 이 설정은 명령이 끝날때 까지 프로그램이 멈추게 되므로 필요한 경우에만 사용합니다.
+			//REQUIRED: callbackOrHandlers
+			//OPTIONAL: callbackOrHandlers.notExists
+			//OPTIONAL: callbackOrHandlers.error
+			//REQUIRED: callbackOrHandlers.success
+
+			let from = params.from;
+			let to = params.to;
+			let isSync = params.isSync;
+			
+			let notExistsHandler;
+			let errorHandler;
+			let callback;
+			
+			if (CHECK_IS_DATA(callbackOrHandlers) !== true) {
+				callback = callbackOrHandlers;
+			} else {
+				notExistsHandler = callbackOrHandlers.notExists;
+				errorHandler = callbackOrHandlers.error;
+				callback = callbackOrHandlers.success;
+			}
+			
+			if (from === to) {
+				if (callback !== undefined) {
+					callback();
 				}
-			});
+			}
+			
+			else {
+				
+				// when normal mode
+				if (isSync !== true) {
+	
+					CHECK_FILE_EXISTS(from, (isExists) => {
+	
+						if (isExists === true) {
+							
+							NEXT([
+							(next) => {
+								
+								FIND_FILE_NAMES(from, (fileNames) => {
+									
+									PARALLEL(fileNames, [
+									(fileName, done) => {
+										COPY_FILE({
+											from : from + '/' + fileName,
+											to : to + '/' + fileName
+										}, done);
+									},
+									
+									() => {
+										next();
+									}]);
+								});
+							},
+							
+							() => {
+								return () => {
+									
+									FIND_FOLDER_NAMES(from, (folderNames) => {
+										
+										PARALLEL(folderNames, [
+										(folderName, done) => {
+											COPY_FOLDER({
+												from : from + '/' + folderName,
+												to : to + '/' + folderName
+											}, done);
+										},
+										
+										() => {
+											
+											if (callback !== undefined) {
+												callback();
+											}
+										}]);
+									});
+								};
+							}]);
+	
+						} else {
+	
+							if (notExistsHandler !== undefined) {
+								notExistsHandler(from);
+							} else {
+								SHOW_WARNING('COPY_FOLDER', MSG({
+									ko : '폴더가 존재하지 않습니다.'
+								}), {
+									from : from
+								});
+							}
+						}
+					});
+				}
+	
+				// when sync mode
+				else {
+	
+					RUN(() => {
+	
+						try {
+	
+							if (CHECK_FILE_EXISTS({
+								path : from,
+								isSync : true
+							}) === true) {
+								
+								FIND_FILE_NAMES({
+									path : from,
+									isSync : true
+								}, EACH((fileName) => {
+									
+									COPY_FILE({
+										from : from + '/' + fileName,
+										to : to + '/' + fileName,
+										isSync : true
+									});
+								}));
+								
+								FIND_FOLDER_NAMES({
+									path : from,
+									isSync : true
+								}, EACH((folderName) => {
+									
+									COPY_FOLDER({
+										from : from + '/' + folderName,
+										to : to + '/' + folderName,
+										isSync : true
+									});
+								}));
+	
+							} else {
+	
+								if (notExistsHandler !== undefined) {
+									notExistsHandler(from);
+								} else {
+									SHOW_WARNING('COPY_FOLDER', MSG({
+										ko : '폴더가 존재하지 않습니다.'
+									}), {
+										from : from
+									});
+								}
+	
+								// do not run callback.
+								return;
+							}
+	
+						} catch(error) {
+							
+							if (error !== TO_DELETE) {
+								
+								let errorMsg = error.toString();
+		
+								if (errorHandler !== undefined) {
+									errorHandler(errorMsg);
+								} else {
+									SHOW_ERROR('COPY_FOLDER', errorMsg);
+								}
+							}
+						}
+	
+						if (callback !== undefined) {
+							callback();
+						}
+					});
+				}
+			}
 		}
 	};
 });
@@ -5446,21 +5663,9 @@ global.GET_FILE_INFO = METHOD(() => {
 									SHOW_ERROR('GET_FILE_INFO', errorMsg);
 								}
 
-							} else if (stat.isDirectory() === true) {
-
-								if (notExistsHandler !== undefined) {
-									notExistsHandler(path);
-								} else {
-									SHOW_WARNING('GET_FILE_INFO', MSG({
-										ko : '파일이 존재하지 않습니다.'
-									}), {
-										path : path
-									});
-								}
-
 							} else if (callback !== undefined) {
 								callback({
-									size : stat.size,
+									size : stat.isDirectory() === true ? undefined : stat.size,
 									createTime : stat.birthtime,
 									lastUpdateTime : stat.mtime
 								});
@@ -5496,34 +5701,19 @@ global.GET_FILE_INFO = METHOD(() => {
 							
 							let stat = FS.statSync(path);
 
-							if (stat.isDirectory() === true) {
-
-								if (notExistsHandler !== undefined) {
-									notExistsHandler(path);
-								} else {
-									SHOW_WARNING('GET_FILE_INFO', MSG({
-										ko : '파일이 존재하지 않습니다.'
-									}), {
-										path : path
-									});
-								}
-								
-							} else {
-								
-								if (callback !== undefined) {
-									callback({
-										size : stat.size,
-										createTime : stat.birthtime,
-										lastUpdateTime : stat.mtime
-									});
-								}
-								
-								return {
-									size : stat.size,
+							if (callback !== undefined) {
+								callback({
+									size : stat.isDirectory() === true ? undefined : stat.size,
 									createTime : stat.birthtime,
 									lastUpdateTime : stat.mtime
-								};
+								});
 							}
+							
+							return {
+								size : stat.isDirectory() === true ? undefined : stat.size,
+								createTime : stat.birthtime,
+								lastUpdateTime : stat.mtime
+							};
 
 						} else {
 
@@ -5563,55 +5753,157 @@ global.GET_FILE_INFO = METHOD(() => {
 /*
  * 파일의 위치를 이동시킵니다.
  */
-global.MOVE_FILE = METHOD({
+global.MOVE_FILE = METHOD(() => {
 
-	run : (params, callbackOrHandlers) => {
-		//REQUIRED: params
-		//REQUIRED: params.from		파일의 원래 위치
-		//REQUIRED: params.to		파일을 옮길 위치
-		//OPTIONAL: params.isSync	true로 설정하면 callback을 실행하지 않고 즉시 실행합니다. 이 설정은 명령이 끝날때 까지 프로그램이 멈추게 되므로 필요한 경우에만 사용합니다.
-		//REQUIRED: callbackOrHandlers
-		//OPTIONAL: callbackOrHandlers.notExistsHandler
-		//OPTIONAL: callbackOrHandlers.error
-		//REQUIRED: callbackOrHandlers.success
-
-		let from = params.from;
-		let isSync = params.isSync;
+	let FS = require('fs');
+	let Path = require('path');
+	
+	return {
 		
-		let notExistsHandler;
-		let errorHandler;
-		let callback;
-
-		if (CHECK_IS_DATA(callbackOrHandlers) !== true) {
-			callback = callbackOrHandlers;
-		} else {
-			notExistsHandler = callbackOrHandlers.notExists;
-			errorHandler = callbackOrHandlers.error;
-			callback = callbackOrHandlers.success;
-		}
-
-		COPY_FILE(params, {
-			error : errorHandler,
-			notExists : notExistsHandler,
-			success : () => {
-
-				REMOVE_FILE({
-					path : from,
+		run : (params, callbackOrHandlers) => {
+			//REQUIRED: params
+			//REQUIRED: params.from		파일의 원래 위치
+			//REQUIRED: params.to		파일을 옮길 위치
+			//OPTIONAL: params.isSync	true로 설정하면 callback을 실행하지 않고 즉시 실행합니다. 이 설정은 명령이 끝날때 까지 프로그램이 멈추게 되므로 필요한 경우에만 사용합니다.
+			//OPTIONAL: callbackOrHandlers
+			//OPTIONAL: callbackOrHandlers.notExistsHandler
+			//OPTIONAL: callbackOrHandlers.error
+			//OPTIONAL: callbackOrHandlers.success
+	
+			let from = params.from;
+			let to = params.to;
+			let isSync = params.isSync;
+			
+			let notExistsHandler;
+			let errorHandler;
+			let callback;
+	
+			if (callbackOrHandlers !== undefined) {
+				if (CHECK_IS_DATA(callbackOrHandlers) !== true) {
+					callback = callbackOrHandlers;
+				} else {
+					notExistsHandler = callbackOrHandlers.notExists;
+					errorHandler = callbackOrHandlers.error;
+					callback = callbackOrHandlers.success;
+				}
+			}
+			
+			if (from === to) {
+				if (callback !== undefined) {
+					callback();
+				}
+			}
+			
+			else {
+				
+				CREATE_FOLDER({
+					path : Path.dirname(to),
 					isSync : isSync
 				}, {
+	
 					error : errorHandler,
-					notExists : notExistsHandler,
-					success : callback
+	
+					success : () => {
+	
+						// when normal mode
+						if (isSync !== true) {
+	
+							CHECK_FILE_EXISTS(from, (isExists) => {
+	
+								if (isExists === true) {
+	
+									FS.rename(from, to, (error) => {
+										
+										if (error !== TO_DELETE) {
+	
+											let errorMsg = error.toString();
+	
+											if (errorHandler !== undefined) {
+												errorHandler(errorMsg);
+											} else {
+												SHOW_ERROR('MOVE_FILE', errorMsg);
+											}
+	
+										} else if (callback !== undefined) {
+											callback(buffer);
+										}
+									});
+	
+								} else {
+	
+									if (notExistsHandler !== undefined) {
+										notExistsHandler(from);
+									} else {
+										SHOW_WARNING('MOVE_FILE', MSG({
+											ko : '파일이 존재하지 않습니다.'
+										}), {
+											from : from
+										});
+									}
+								}
+							});
+						}
+	
+						// when sync mode
+						else {
+	
+							RUN(() => {
+	
+								try {
+	
+									if (CHECK_FILE_EXISTS({
+										path : from,
+										isSync : true
+									}) === true) {
+	
+										FS.renameSync(from, to);
+	
+									} else {
+	
+										if (notExistsHandler !== undefined) {
+											notExistsHandler(from);
+										} else {
+											SHOW_WARNING('MOVE_FILE', MSG({
+												ko : '파일이 존재하지 않습니다.'
+											}), {
+												from : from
+											});
+										}
+	
+										// do not run callback.
+										return;
+									}
+	
+								} catch(error) {
+	
+									if (error !== TO_DELETE) {
+	
+										let errorMsg = error.toString();
+	
+										if (errorHandler !== undefined) {
+											errorHandler(errorMsg);
+										} else {
+											SHOW_ERROR('MOVE_FILE', errorMsg);
+										}
+									}
+								}
+	
+								if (callback !== undefined) {
+									callback();
+								}
+							});
+						}
+					}
 				});
 			}
-		});
+		}
 	}
 });
 
 /*
  * 파일의 내용을 불러옵니다.
  * 
- * 내용을 Buffer형으로 불러오기 때문에, 내용을 문자열로 불러오려면 toString 함수를 이용하시기 바랍니다.
+ * 내용을 Buffer형으로 불러오기 때문에, 내용을 문자열로 불러오려면 toString 메소드를 이용하시기 바랍니다.
  */
 global.READ_FILE = METHOD(() => {
 	
@@ -6009,7 +6301,7 @@ global.REMOVE_FOLDER = METHOD(() => {
 							};
 						},
 						
-						(next) => {
+						() => {
 							return () => {
 								
 								FS.rmdir(path, (error) => {
@@ -6446,10 +6738,7 @@ global.MINIFY_JS = METHOD(() => {
 
 				return UglifyJS.minify(code, {
 					fromString : true,
-					mangle : true,
-					output : {
-						comments : /@license|@preserve|^!/
-					}
+					mangle : true
 				}).code;
 			
 			} catch(error) {
@@ -7291,7 +7580,7 @@ global.SOCKET_SERVER = METHOD({
 			// send to client.
 			send = (methodNameOrParams, callback) => {
 				//REQUIRED: methodNameOrParams
-				//REQUIRED: methodNameOrParams.methodName	클라이언트에 on 함수로 설정된 메소드 이름
+				//REQUIRED: methodNameOrParams.methodName	클라이언트에 on으로 설정된 메소드 이름
 				//REQUIRED: methodNameOrParams.data			전송할 데이터
 				//OPTIONAL: callback
 
@@ -7523,7 +7812,7 @@ global.WEB_SERVER = CLASS((cls) => {
 
 	let getEncodingFromContentType = cls.getEncodingFromContentType = (contentType) => {
 
-		if (contentType === 'application/javascript') {
+		if (contentType === 'application/javascript' || contentType === 'text/javascript') {
 			return 'utf-8';
 		}
 
@@ -7806,7 +8095,7 @@ global.WEB_SERVER = CLASS((cls) => {
 							//OPTIONAL: contentOrParams.contentType		응답하는 컨텐츠의 종류
 							//OPTIONAL: contentOrParams.buffer			응답 내용을 Buffer형으로 전달
 							//OPTIONAL: contentOrParams.content			응답 내용을 문자열로 전달
-							//OPTIONAL: contentOrParams.stream			FS.createReadStream와 같은 함수로 스트림을 생성한 경우, 스트림을 응답으로 전달할 수 있습니다.
+							//OPTIONAL: contentOrParams.stream			FS.createReadStream와 같은 메소드로 스트림을 생성한 경우, 스트림을 응답으로 전달할 수 있습니다.
 							//OPTIONAL: contentOrParams.totalSize		stream으로 응답을 전달하는 경우 스트림의 전체 길이
 							//OPTIONAL: contentOrParams.startPosition	stream으로 응답을 전달하는 경우 전달할 시작 위치
 							//OPTIONAL: contentOrParams.endPosition		stream으로 응답을 전달하는 경우 전달할 끝 위치
@@ -7898,7 +8187,7 @@ global.WEB_SERVER = CLASS((cls) => {
 									}
 									
 									// when gzip encoding
-									if (acceptEncoding.match(/\bgzip\b/) !== TO_DELETE) {
+									if (encoding === 'utf-8' && acceptEncoding.match(/\bgzip\b/) !== TO_DELETE) {
 	
 										headers['Content-Encoding'] = 'gzip';
 
@@ -7974,66 +8263,75 @@ global.WEB_SERVER = CLASS((cls) => {
 				
 									}).on('end', () => {
 										
-										NEXT(fileDataSet, [
-										(fileData, next) => {
+										let totalFileSize = 0;
+										
+										EACH(fileDataSet, (fileData) => {
+											totalFileSize += fileData.size;
+										});
+										
+										if (totalFileSize > maxUploadFileMB * 1024 * 1024) {
 											
-											let path = fileData.path;
-											let fileSize = fileData.size;
-											let fileType = fileData.type;
+											NEXT(fileDataSet, [
+											(fileData, next) => {
+												REMOVE_FILE(fileData.path, next);
+											},
 											
-											fileData.ip = ip;
-											
-											if (fileSize > maxUploadFileMB * 1024 * 1024) {
-				
-												NEXT(fileDataSet, [
-												(fileData, next) => {
-													REMOVE_FILE(fileData.path, next);
-												},
-				
-												() => {
-													return () => {
-														if (uploadOverFileSizeHandler !== undefined) {
-															uploadOverFileSizeHandler(params, maxUploadFileMB, requestInfo, response);
-														}
-													};
-												}]);
-				
-												return false;
-											}
-											
-											if (fileType === 'image/png' || fileType === 'image/jpeg' || fileType === 'image/gif') {
-				
-												IMAGEMAGICK_READ_METADATA(path, {
-													error : () => {
-														next(fileData);
-													},
-													success : (metadata) => {
-				
-														if (metadata.exif !== undefined) {
-				
-															fileData.exif = metadata.exif;
-				
-															IMAGEMAGICK_CONVERT([path, '-auto-orient', path], {
-																error : errorHandler,
-																success : next
-															});
-				
-														} else {
-															next();
-														}
+											() => {
+												return () => {
+													if (uploadOverFileSizeHandler !== undefined) {
+														uploadOverFileSizeHandler(params, maxUploadFileMB, requestInfo, response);
 													}
-												});
-				
-											} else {
-												next();
-											}
-										},
-				
-										() => {
-											return () => {
-												uploadSuccessHandler(params, fileDataSet, requestInfo, response);
-											};
-										}]);
+												};
+											}]);
+											
+											return false;
+										}
+										
+										else {
+											
+											NEXT(fileDataSet, [
+											(fileData, next) => {
+												
+												let path = fileData.path;
+												let fileSize = fileData.size;
+												let fileType = fileData.type;
+												
+												fileData.ip = ip;
+												
+												if (fileType === 'image/png' || fileType === 'image/jpeg' || fileType === 'image/gif') {
+					
+													IMAGEMAGICK_READ_METADATA(path, {
+														error : () => {
+															next(fileData);
+														},
+														success : (metadata) => {
+					
+															if (metadata.exif !== undefined) {
+					
+																fileData.exif = metadata.exif;
+					
+																IMAGEMAGICK_CONVERT([path, '-auto-orient', path], {
+																	error : errorHandler,
+																	success : next
+																});
+					
+															} else {
+																next();
+															}
+														}
+													});
+					
+												} else {
+													next();
+												}
+											},
+					
+											() => {
+												return () => {
+													uploadSuccessHandler(params, fileDataSet, requestInfo, response);
+												};
+											}]);
+										}
 										
 									}).on('error', (error) => {
 										responseError(error.toString());
@@ -8333,9 +8631,9 @@ global.WEB_SOCKET_SERVER = METHOD({
 		
 		let parseCookieStr = WEB_SERVER.parseCookieStr;
 		
-		let nativeConnectionListener = (conn) => {
+		let nativeConnectionListener = (conn, req) => {
 
-			let headers = conn.upgradeReq.headers;
+			let headers = req.headers;
 
 			let methodMap = {};
 			let sendKey = 0;
@@ -8415,7 +8713,7 @@ global.WEB_SOCKET_SERVER = METHOD({
 			ip = headers['x-forwarded-for'];
 
 			if (ip === undefined) {
-				ip = conn.upgradeReq.connection.remoteAddress;
+				ip = req.connection.remoteAddress;
 			}
 
 			connectionListener(

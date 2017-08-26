@@ -100,7 +100,7 @@ global.WEB_SERVER = CLASS((cls) => {
 
 	let getEncodingFromContentType = cls.getEncodingFromContentType = (contentType) => {
 
-		if (contentType === 'application/javascript') {
+		if (contentType === 'application/javascript' || contentType === 'text/javascript') {
 			return 'utf-8';
 		}
 
@@ -383,7 +383,7 @@ global.WEB_SERVER = CLASS((cls) => {
 							//OPTIONAL: contentOrParams.contentType		응답하는 컨텐츠의 종류
 							//OPTIONAL: contentOrParams.buffer			응답 내용을 Buffer형으로 전달
 							//OPTIONAL: contentOrParams.content			응답 내용을 문자열로 전달
-							//OPTIONAL: contentOrParams.stream			FS.createReadStream와 같은 함수로 스트림을 생성한 경우, 스트림을 응답으로 전달할 수 있습니다.
+							//OPTIONAL: contentOrParams.stream			FS.createReadStream와 같은 메소드로 스트림을 생성한 경우, 스트림을 응답으로 전달할 수 있습니다.
 							//OPTIONAL: contentOrParams.totalSize		stream으로 응답을 전달하는 경우 스트림의 전체 길이
 							//OPTIONAL: contentOrParams.startPosition	stream으로 응답을 전달하는 경우 전달할 시작 위치
 							//OPTIONAL: contentOrParams.endPosition		stream으로 응답을 전달하는 경우 전달할 끝 위치
@@ -475,7 +475,7 @@ global.WEB_SERVER = CLASS((cls) => {
 									}
 									
 									// when gzip encoding
-									if (acceptEncoding.match(/\bgzip\b/) !== TO_DELETE) {
+									if (encoding === 'utf-8' && acceptEncoding.match(/\bgzip\b/) !== TO_DELETE) {
 	
 										headers['Content-Encoding'] = 'gzip';
 
@@ -551,66 +551,75 @@ global.WEB_SERVER = CLASS((cls) => {
 				
 									}).on('end', () => {
 										
-										NEXT(fileDataSet, [
-										(fileData, next) => {
+										let totalFileSize = 0;
+										
+										EACH(fileDataSet, (fileData) => {
+											totalFileSize += fileData.size;
+										});
+										
+										if (totalFileSize > maxUploadFileMB * 1024 * 1024) {
 											
-											let path = fileData.path;
-											let fileSize = fileData.size;
-											let fileType = fileData.type;
+											NEXT(fileDataSet, [
+											(fileData, next) => {
+												REMOVE_FILE(fileData.path, next);
+											},
 											
-											fileData.ip = ip;
-											
-											if (fileSize > maxUploadFileMB * 1024 * 1024) {
-				
-												NEXT(fileDataSet, [
-												(fileData, next) => {
-													REMOVE_FILE(fileData.path, next);
-												},
-				
-												() => {
-													return () => {
-														if (uploadOverFileSizeHandler !== undefined) {
-															uploadOverFileSizeHandler(params, maxUploadFileMB, requestInfo, response);
-														}
-													};
-												}]);
-				
-												return false;
-											}
-											
-											if (fileType === 'image/png' || fileType === 'image/jpeg' || fileType === 'image/gif') {
-				
-												IMAGEMAGICK_READ_METADATA(path, {
-													error : () => {
-														next(fileData);
-													},
-													success : (metadata) => {
-				
-														if (metadata.exif !== undefined) {
-				
-															fileData.exif = metadata.exif;
-				
-															IMAGEMAGICK_CONVERT([path, '-auto-orient', path], {
-																error : errorHandler,
-																success : next
-															});
-				
-														} else {
-															next();
-														}
+											() => {
+												return () => {
+													if (uploadOverFileSizeHandler !== undefined) {
+														uploadOverFileSizeHandler(params, maxUploadFileMB, requestInfo, response);
 													}
-												});
-				
-											} else {
-												next();
-											}
-										},
-				
-										() => {
-											return () => {
-												uploadSuccessHandler(params, fileDataSet, requestInfo, response);
-											};
-										}]);
+												};
+											}]);
+											
+											return false;
+										}
+										
+										else {
+											
+											NEXT(fileDataSet, [
+											(fileData, next) => {
+												
+												let path = fileData.path;
+												let fileSize = fileData.size;
+												let fileType = fileData.type;
+												
+												fileData.ip = ip;
+												
+												if (fileType === 'image/png' || fileType === 'image/jpeg' || fileType === 'image/gif') {
+					
+													IMAGEMAGICK_READ_METADATA(path, {
+														error : () => {
+															next(fileData);
+														},
+														success : (metadata) => {
+					
+															if (metadata.exif !== undefined) {
+					
+																fileData.exif = metadata.exif;
+					
+																IMAGEMAGICK_CONVERT([path, '-auto-orient', path], {
+																	error : errorHandler,
+																	success : next
+																});
+					
+															} else {
+																next();
+															}
+														}
+													});
+					
+												} else {
+													next();
+												}
+											},
+					
+											() => {
+												return () => {
+													uploadSuccessHandler(params, fileDataSet, requestInfo, response);
+												};
+											}]);
+										}
 										
 									}).on('error', (error) => {
 										responseError(error.toString());

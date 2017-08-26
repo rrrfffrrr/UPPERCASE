@@ -271,6 +271,8 @@ global.CLASS = METHOD((m) => {
 			cls.id = getNextInstanceId();
 
 			let innerInit = cls.innerInit = (inner, self, params, funcs) => {
+				//REQUIRED: inner
+				//REQUIRED: self
 				//OPTIONAL: params
 				//OPTIONAL: funcs
 				
@@ -326,7 +328,7 @@ global.CLASS = METHOD((m) => {
 							mom.innerInit(inner, self, params, funcs);
 						}
 
-						// when mon's type is OBJECT
+						// when mom's type is OBJECT
 						else {
 							mom.type.innerInit(inner, self, params, funcs);
 						}
@@ -341,6 +343,8 @@ global.CLASS = METHOD((m) => {
 			};
 
 			let innerAfterInit = cls.innerAfterInit = (inner, self, params, funcs) => {
+				//REQUIRED: inner
+				//REQUIRED: self
 				//OPTIONAL: params
 				//OPTIONAL: funcs
 
@@ -382,7 +386,7 @@ global.INIT_OBJECTS = METHOD({
 });
 
 /*
- * 실글톤 객체를 생성합니다.
+ * 싱글톤 객체를 생성합니다.
  */
 global.OBJECT = METHOD((m) => {
 
@@ -473,17 +477,17 @@ global.OBJECT = METHOD((m) => {
  */
 global.NEXT = METHOD({
 
-	run : (countOrArray, funcs) => {
+	run : (countOrArray, funcOrFuncs) => {
 		//OPTIONAL: countOrArray
-		//REQUIRED: funcs
+		//REQUIRED: funcOrFuncs
 
 		let count;
 		let array;
 		
 		let f;
 		
-		if (funcs === undefined) {
-			funcs = countOrArray;
+		if (funcOrFuncs === undefined) {
+			funcOrFuncs = countOrArray;
 			countOrArray = undefined;
 		}
 
@@ -494,7 +498,14 @@ global.NEXT = METHOD({
 				array = countOrArray;
 			}
 		}
-
+		
+		let funcs;
+		if (CHECK_IS_ARRAY(funcOrFuncs) !== true) {
+			funcs = [funcOrFuncs];
+		} else {
+			funcs = funcOrFuncs;
+		}
+		
 		REPEAT({
 			start : funcs.length - 1,
 			end : 0
@@ -790,13 +801,24 @@ global.STRINGIFY = METHOD({
 		
 		else if (CHECK_IS_ARRAY(data) === true) {
 			
-			let array = [];
+			let f = (array) => {
+				
+				let newArray = [];
+				
+				EACH(array, (data) => {
+					if (CHECK_IS_DATA(data) === true) {
+						newArray.push(PACK_DATA(data));
+					} else if (CHECK_IS_ARRAY(data) === true) {
+						newArray.push(f(data));
+					} else {
+						newArray.push(data);
+					}
+				});
+				
+				return newArray;
+			};
 			
-			EACH(data, (data) => {
-				array.push(PACK_DATA(data));
-			});
-			
-			return JSON.stringify(array);
+			return JSON.stringify(f(data));
 		}
 		
 		else {
@@ -2339,11 +2361,11 @@ global.LOOP = CLASS((cls) => {
 
 		if (animationInterval === undefined) {
 
-			let beforeTime = Date.now();
+			let beforeTime = Date.now() / 1000;
 
 			animationInterval = INTERVAL(() => {
 
-				let time = Date.now();
+				let time = Date.now() / 1000;
 				let deltaTime = time - beforeTime;
 				
 				if (deltaTime > 0) {
@@ -2360,7 +2382,7 @@ global.LOOP = CLASS((cls) => {
 							}
 
 							// calculate count.
-							let count = parseInt(loopInfo.fps / (1000 / deltaTime) * (loopInfo.timeSigma / deltaTime + 1), 10) - loopInfo.countSigma;
+							let count = parseInt(loopInfo.fps * deltaTime * (loopInfo.timeSigma / deltaTime + 1), 10) - loopInfo.countSigma;
 
 							// start.
 							if (loopInfo.start !== undefined) {
@@ -3169,23 +3191,6 @@ global.COOKIE_STORE = CLASS({
 			return pop === undefined ? undefined : JSON.parse(decodeURIComponent(pop));
 		};
 		
-		let list = self.list = () => {
-			
-			let values = {};
-			
-			EACH(document.cookie.split(';'), (str) => {
-				
-				let index = str.indexOf('=');
-				let fullName = str.substring(0, index);
-				
-				if (fullName.substring(0, storeName.length + 1) === storeName + '.') {
-					values[fullName.substring(storeName.length + 1)] = str.substring(index + 1);
-				}
-			});
-			
-			return values;
-		};
-
 		let remove = self.remove = (name) => {
 			//REQUIRED: name
 
@@ -3193,6 +3198,55 @@ global.COOKIE_STORE = CLASS({
 			expireTime.setDate(expireTime.getDate() - 1);
 			
 			document.cookie = genFullName(name) + '=; expires=' + expireTime.toGMTString() + '; path=/;' + (domain === undefined ? '' : ' domain=' + domain + ';');
+		};
+		
+		let all = self.all = () => {
+			
+			let all = {};
+			
+			EACH(document.cookie.split(';'), (str) => {
+				
+				let index = str.indexOf('=');
+				let fullName = str.substring(0, index);
+				
+				if (fullName.indexOf(storeName + '.') === 0) {
+					
+					all[fullName.substring(storeName.length + 1)] = str.substring(index + 1);
+				}
+			});
+			
+			return all;
+		};
+
+		let count = self.count = () => {
+			
+			let count = 0;
+			
+			EACH(document.cookie.split(';'), (str) => {
+				
+				let index = str.indexOf('=');
+				let fullName = str.substring(0, index);
+				
+				if (fullName.indexOf(storeName + '.') === 0) {
+					count += 1;
+				}
+			});
+			
+			return count;
+		};
+
+		let clear = self.clear = () => {
+			
+			EACH(document.cookie.split(';'), (str) => {
+				
+				let index = str.indexOf('=');
+				let fullName = str.substring(0, index);
+				
+				if (fullName.indexOf(storeName + '.') === 0) {
+					
+					remove(fullName.substring(storeName.length + 1));
+				}
+			});
 		};
 	}
 });
@@ -3222,8 +3276,16 @@ FOR_BOX((box) => {
 			});
 
 			let save = self.save = store.save;
+			
 			let get = self.get = store.get;
+			
 			let remove = self.remove = store.remove;
+			
+			let all = self.all = store.all;
+			
+			let count = self.count = store.count;
+			
+			let clear = self.clear = store.clear;
 		}
 	});
 });
@@ -3309,11 +3371,11 @@ OVERRIDE(LOOP, (origin) => {
 				
 				let step;
 	
-				beforeTime = Date.now();
+				beforeTime = performance.now() / 1000;
 				
-				animationInterval = requestAnimationFrame(step = () => {
-	
-					let time = Date.now();
+				animationInterval = requestAnimationFrame(step = (now) => {
+					
+					let time = now / 1000;
 					let deltaTime = time - beforeTime;
 					
 					if (deltaTime > 0) {
@@ -3330,7 +3392,7 @@ OVERRIDE(LOOP, (origin) => {
 								}
 	
 								// calculate count.
-								let count = parseInt(loopInfo.fps / (1000 / deltaTime) * (loopInfo.timeSigma / deltaTime + 1), 10) - loopInfo.countSigma;
+								let count = parseInt(loopInfo.fps * deltaTime * (loopInfo.timeSigma / deltaTime + 1), 10) - loopInfo.countSigma;
 	
 								// start.
 								if (loopInfo.start !== undefined) {
@@ -3518,13 +3580,20 @@ global.SOUND = CLASS((cls) => {
 			//OPTIONAL: params.ogg
 			//OPTIONAL: params.mp3
 			//OPTIONAL: params.isLoop
+			//OPTIONAL: params.gain
 
 			let ogg = params.ogg;
 			let mp3 = params.mp3;
 			let isLoop = params.isLoop;
+			let gain = params.gain;
+			
+			if (gain === undefined) {
+				gain = 0.5;
+			}
 			
 			let buffer;
 			let source;
+			let gainNode;
 			
 			let startedAt = 0;
 			let pausedAt = 0;
@@ -3544,14 +3613,12 @@ global.SOUND = CLASS((cls) => {
 
 				audioContext.decodeAudioData(request.response, (_buffer) => {
 
-					let gain = audioContext.createGain ? audioContext.createGain() : audioContext.createGainNode();
+					gainNode = audioContext.createGain();
 
 					buffer = _buffer;
-
-					// default volume
-					// support both webkitAudioContext or standard AudioContext
-					gain.connect(audioContext.destination);
-					gain.gain.value = 0.5;
+					
+					gainNode.connect(audioContext.destination);
+					gainNode.gain.value = gain;
 
 					if (delayed !== undefined) {
 						delayed();
@@ -3565,13 +3632,8 @@ global.SOUND = CLASS((cls) => {
 				delayed = () => {
 
 					source = audioContext.createBufferSource();
-					// creates a sound source
 					source.buffer = buffer;
-					// tell the source which sound to play
-					source.connect(audioContext.destination);
-					// connect the source to the context's destination (the speakers)
-					// support both webkitAudioContext or standard AudioContext
-
+					source.connect(gainNode);
 					source.loop = isLoop;
 					
 					startedAt = Date.now() - pausedAt;
@@ -3598,10 +3660,40 @@ global.SOUND = CLASS((cls) => {
 				if (source !== undefined) {
 					source.stop(0);
 					pausedAt = 0;
+					
+					source = undefined;
+				}
+			};
+			
+			let setGain = self.setGain = (_gain) => {
+				gain = _gain;
+				
+				if (gainNode !== undefined) {
+					gainNode.gain.value = gain;
 				}
 			};
 		}
 	};
+});
+
+/*
+ * 사운드 파일을 한번 재생하는 SOUND_ONCE 클래스
+ */
+global.SOUND_ONCE = CLASS({
+
+	preset : () => {
+		return SOUND;
+	},
+
+	init : (inner, self, params) => {
+		//REQUIRED: params
+		//OPTIONAL: params.ogg
+		//OPTIONAL: params.mp3
+		//OPTIONAL: params.isLoop
+		//OPTIONAL: params.gain
+
+		self.play();
+	}
 });
 
 /*
@@ -3649,6 +3741,46 @@ global.STORE = CLASS({
 			
 			localStorage.removeItem(genFullName(name));
 		};
+
+		let all = self.all = () => {
+			
+			let all = {};
+			
+			EACH(localStorage, (value, fullName) => {
+				
+				if (fullName.indexOf(storeName + '.') === 0) {
+					
+					all[fullName.substring(storeName.length + 1)] = PARSE_STR(value);
+				}
+			});
+			
+			return all;
+		};
+
+		let count = self.count = () => {
+			
+			let count = 0;
+			
+			EACH(localStorage, (value, fullName) => {
+				
+				if (fullName.indexOf(storeName + '.') === 0) {
+					count += 1;
+				}
+			});
+			
+			return count;
+		};
+
+		let clear = self.clear = () => {
+			
+			EACH(localStorage, (value, fullName) => {
+				
+				if (fullName.indexOf(storeName + '.') === 0) {
+					
+					remove(fullName.substring(storeName.length + 1));
+				}
+			});
+		};
 	}
 });
 
@@ -3662,8 +3794,16 @@ FOR_BOX((box) => {
 			let store = STORE(box.boxName + '.' + storeName);
 
 			let save = self.save = store.save;
+			
 			let get = self.get = store.get;
+			
 			let remove = self.remove = store.remove;
+			
+			let all = self.all = store.all;
+			
+			let count = self.count = store.count;
+			
+			let clear = self.clear = store.clear;
 		}
 	});
 });
@@ -4354,11 +4494,7 @@ global.NODE = CLASS({
 
 				setParent(undefined);
 
-				// fire remove event.
-				EVENT.fireAll({
-					node : self,
-					name : 'remove'
-				});
+				fireEvent('remove');
 
 				EVENT.removeAll({
 					node : self
@@ -4401,6 +4537,15 @@ global.NODE = CLASS({
 					name : eventName
 				});
 			}
+		};
+		
+		let fireEvent = self.fireEvent = (eventName) => {
+			//REQUIRED: eventName
+			
+			EVENT.fireAll({
+				node : self,
+				name : eventName
+			});
 		};
 
 		let addStyle = self.addStyle = (style) => {
@@ -4618,6 +4763,8 @@ global.E = CLASS({
 		
 		let e = params.e;
 		let el = params.el;
+		
+		let isBubblingStoped;
 
 		let checkIsDescendant = (parent, child) => {
 
@@ -4641,6 +4788,11 @@ global.E = CLASS({
 
 		let stopBubbling = self.stopBubbling = () => {
 			e.stopPropagation();
+			isBubblingStoped = true;
+		};
+		
+		let checkIsBubblingStoped = self.checkIsBubblingStoped = () => {
+			return isBubblingStoped;
 		};
 
 		let stop = self.stop = () => {
@@ -5152,6 +5304,30 @@ global.EVENT = CLASS((cls) => {
 					if (INFO.checkIsTouchMode() !== true) {
 						eventHandler(e, node);
 					}
+				}));
+			}
+			
+			else if (name === 'keydown') {
+				
+				let lastKey;
+				
+				eventLows.push(EVENT_LOW({
+					node : node,
+					lowNode : lowNode,
+					name : 'keydown'
+				}, (e, node) => {
+					if (lastKey !== e.getKey()) {
+						eventHandler(e, node);
+						lastKey = e.getKey();
+					}
+				}));
+				
+				eventLows.push(EVENT_LOW({
+					node : node,
+					lowNode : lowNode,
+					name : 'keyup'
+				}, (e, node) => {
+					lastKey = undefined;
 				}));
 			}
 
@@ -5926,13 +6102,18 @@ global.IMG = CLASS({
 		//OPTIONAL: params.id		id 속성
 		//OPTIONAL: params.cls		class 속성
 		//OPTIONAL: params.style	스타일
+		//OPTIONAL: params.width
+		//OPTIONAL: params.height
 		//REQUIRED: params.src		이미지 경로
 		//OPTIONAL: params.c		자식 노드. 하나의 노드를 지정하거나, 노드들의 배열을 지정할 수 있습니다.
 		//OPTIONAL: params.on		이벤트
 		
 		let src = params.src;
-		let el = self.getEl();
+		let width = params.width;
+		let height = params.height;
 
+		let el = self.getEl();
+		
 		//OVERRIDE: self.getWidth
 		let getWidth = self.getWidth = () => {
 			return el.width;
@@ -5959,6 +6140,11 @@ global.IMG = CLASS({
 				el.height = height;
 			}
 		};
+
+		setSize({
+			width : width,
+			height : height
+		});
 
 		let getSrc = self.getSrc = () => {
 			return src;
@@ -7943,7 +8129,12 @@ global.GO = METHOD((m) => {
 			
 			else {
 				
-				history.pushState(undefined, undefined, HREF(uri));
+				// when protocol is 'file:', use hashbang.
+				if (location.protocol === 'file:') {
+					location.href = HREF(uri);
+				} else {
+					history.pushState(undefined, undefined, HREF(uri));
+				}
 				
 				MATCH_VIEW.checkAll();
 			}
@@ -7995,7 +8186,12 @@ global.HREF = METHOD({
 	run : (uri) => {
 		//REQUIRED: uri
 
-		return '/' + uri;
+		// when protocol is 'file:', use hashbang.
+		if (location.protocol === 'file:') {
+			return '#!/' + uri;
+		} else {
+			return '/' + uri;
+		}
 	}
 });
 
@@ -8086,10 +8282,19 @@ global.MATCH_VIEW = METHOD((m) => {
 			};
 			
 			changeURIHandlers.push(changeURIHandler);
-	
-			EVENT('popstate', () => {
-				changeURIHandler();
-			});
+			
+			// when protocol is 'file:', use hashbang.
+			if (location.protocol === 'file:') {
+				EVENT('hashchange', () => {
+					changeURIHandler();
+				});
+			}
+			
+			else {
+				EVENT('popstate', () => {
+					changeURIHandler();
+				});
+			}
 			
 			changeURIHandler();
 		}
@@ -8169,14 +8374,31 @@ global.REFRESH = METHOD((m) => {
 
 		run : (uri) => {
 			//OPTIONAL: uri
-	
-			let savedURI = uri !== undefined ? uri : location.pathname.substring(1);
-	
-			history.pushState(undefined, undefined, '/' + REFRESHING_URI);
-			MATCH_VIEW.checkAll();
 			
-			history.replaceState(undefined, undefined, '/' + savedURI);
-			MATCH_VIEW.checkAll();
+			// when protocol is 'file:', use hashbang.
+			if (location.protocol === 'file:') {
+				
+				let savedHash = uri !== undefined ? '#!/' + uri : location.hash;
+		
+				EVENT_ONCE({
+					name : 'hashchange'
+				}, () => {
+					location.replace(savedHash === '' ? '#!/' : savedHash);
+				});
+		
+				location.href = '#!/' + getRefreshingURI();
+			}
+			
+			else {
+				
+				let savedURI = uri !== undefined ? uri : location.pathname.substring(1);
+		
+				history.pushState(undefined, undefined, '/' + REFRESHING_URI);
+				MATCH_VIEW.checkAll();
+				
+				history.replaceState(undefined, undefined, '/' + savedURI);
+				MATCH_VIEW.checkAll();
+			}
 		}
 	};
 });
@@ -8200,7 +8422,12 @@ global.URI = METHOD({
 
 	run : () => {
 		
-		return decodeURIComponent(location.pathname.substring(1));
+		// when protocol is 'file:', use hashbang.
+		if (location.protocol === 'file:') {
+			return location.hash.substring(3);
+		} else {
+			return decodeURIComponent(location.pathname.substring(1));
+		}
 	}
 });
 

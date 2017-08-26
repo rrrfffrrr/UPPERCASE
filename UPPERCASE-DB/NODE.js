@@ -68,7 +68,7 @@ global.CONNECT_TO_DB_SERVER = METHOD((m) => {
 			let username = params.username;
 			let password = params.password;
 			
-			let backupHost = params.backupHost;
+			let backupHost = params.backupHost === undefined ? '127.0.0.1' : params.backupHost;
 			let backupPort = params.backupPort === undefined ? 27017 : params.backupPort;
 			let backupName = params.backupName;
 			let backupUsername = params.backupUsername;
@@ -101,7 +101,7 @@ global.CONNECT_TO_DB_SERVER = METHOD((m) => {
 	
 						nativeDBs[dbServerName] = nativeDB;
 	
-						if (backupHost === undefined) {
+						if (backupName === undefined) {
 							next.next(nativeDB);
 						} else {
 							next(nativeDB);
@@ -214,6 +214,7 @@ FOR_BOX((box) => {
 				let waitingUpdateInfos = [];
 				let waitingRemoveInfos = [];
 				let waitingFindInfos = [];
+				let waitingFindAllAndUpdateNoHistoryInfos = [];
 				let waitingCountInfos = [];
 				let waitingCheckIsExistsInfos = [];
 				let waitingAggregateInfos = [];
@@ -362,26 +363,6 @@ FOR_BOX((box) => {
 					});
 				};
 				
-				let updateNoRecord = self.updateNoRecord = (data, callbackOrHandlers) => {
-					//REQUIRED: data
-					//REQUIRED: data.id
-					//OPTIONAL: data.$inc
-					//OPTIONAL: data.$push
-					//OPTIONAL: data.$addToSet
-					//OPTIONAL: data.$pull
-					//OPTIONAL: callbackOrHandlers
-					//OPTIONAL: callbackOrHandlers.success
-					//OPTIONAL: callbackOrHandlers.notExists
-					//OPTIONAL: callbackOrHandlers.error
-	
-					waitingUpdateInfos.push({
-						data : data,
-						callbackOrHandlers : callbackOrHandlers,
-						isNotToSaveHistory : true,
-						isNotToUpdateLastUpdateTime : true
-					});
-				};
-				
 				let remove = self.remove = (id, callbackOrHandlers) => {
 					//REQUIRED: id
 					//OPTIONAL: callbackOrHandlers
@@ -394,7 +375,7 @@ FOR_BOX((box) => {
 						callbackOrHandlers : callbackOrHandlers
 					});
 				};
-	
+				
 				let find = self.find = (params, callbackOrHandlers) => {
 					//OPTIONAL: params
 					//OPTIONAL: params.filter
@@ -411,7 +392,25 @@ FOR_BOX((box) => {
 						callbackOrHandlers : callbackOrHandlers
 					});
 				};
+				
+				let findAllAndUpdateNoHistory = self.findAllAndUpdateNoHistory = (params, callbackOrHandlers) => {
+					//REQUIRED: params
+					//REQUIRED: params.filter
+					//REQUIRED: params.data
+					//OPTIONAL: params.data.$inc
+					//OPTIONAL: params.data.$push
+					//OPTIONAL: params.data.$addToSet
+					//OPTIONAL: params.data.$pull
+					//OPTIONAL: callbackOrHandlers
+					//OPTIONAL: callbackOrHandlers.error
+					//OPTIONAL: callbackOrHandlers.success
 	
+					waitingFindAllAndUpdateNoHistoryInfos.push({
+						params : params,
+						callbackOrHandlers : callbackOrHandlers
+					});
+				};
+				
 				let count = self.count = (params, callbackOrHandlers) => {
 					//OPTIONAL: params
 					//OPTIONAL: params.filter
@@ -546,11 +545,17 @@ FOR_BOX((box) => {
 						}
 	
 						if (errorHandler !== undefined) {
-							errorHandler(errorInfo.errorMsg);
+							errorHandler(errorInfo.errorMsg, errorInfo);
 						} else {
-							SHOW_ERROR('DB', errorInfo.errorMsg, {
+							
+							let errorMsg = errorInfo.errorMsg;
+							
+							delete errorInfo.errorMsg;
+							
+							SHOW_ERROR('DB', errorMsg, {
 								boxName : box.boxName,
-								name : name
+								name : name,
+								errorInfo : errorInfo
 							});
 						}
 					};
@@ -867,7 +872,7 @@ FOR_BOX((box) => {
 						}
 					};
 	
-					let innerUpdate = (data, callbackOrHandlers, isNotToSaveHistory, isNotToUpdateLastUpdateTime) => {
+					let innerUpdate = (data, callbackOrHandlers, isNotToSaveHistory) => {
 						//REQUIRED: data
 						//REQUIRED: data.id
 						//OPTIONAL: data.$inc
@@ -879,7 +884,6 @@ FOR_BOX((box) => {
 						//OPTIONAL: callbackOrHandlers.error
 						//OPTIONAL: callbackOrHandlers.success
 						//OPTIONAL: isNotToSaveHistory
-						//OPTIONAL: isNotToUpdateLastUpdateTime
 						
 						let id = data.id;
 						let $inc = data.$inc;
@@ -892,11 +896,11 @@ FOR_BOX((box) => {
 						let callback;
 	
 						try {
-	
+							
 							let filter = {
 								_id : gen_id(id)
 							};
-	
+							
 							if (callbackOrHandlers !== undefined) {
 								if (CHECK_IS_DATA(callbackOrHandlers) !== true) {
 									callback = callbackOrHandlers;
@@ -908,12 +912,12 @@ FOR_BOX((box) => {
 							}
 							
 							let $unset;
-	
+							
 							EACH(data, (value, name) => {
 								if (name === 'id' || name === '_id' || name === 'createTime' || name[0] === '$') {
 									delete data[name];
 								} else if (value === TO_DELETE) {
-	
+									
 									if ($unset === undefined) {
 										$unset = {};
 									}
@@ -923,10 +927,8 @@ FOR_BOX((box) => {
 							});
 							
 							removeEmptyValues(data);
-	
-							if (isNotToUpdateLastUpdateTime !== true) {
-								data.lastUpdateTime = new Date();
-							}
+							
+							data.lastUpdateTime = new Date();
 							
 							let updateData = {};
 							
@@ -1164,21 +1166,6 @@ FOR_BOX((box) => {
 						//OPTIONAL: callbackOrHandlers.error
 	
 						innerUpdate(data, callbackOrHandlers, true);
-					};
-					
-					updateNoRecord = self.updateNoRecord = (data, callbackOrHandlers) => {
-						//REQUIRED: data
-						//REQUIRED: data.id
-						//OPTIONAL: data.$inc
-						//OPTIONAL: data.$push
-						//OPTIONAL: data.$addToSet
-						//OPTIONAL: data.$pull
-						//OPTIONAL: callbackOrHandlers
-						//OPTIONAL: callbackOrHandlers.success
-						//OPTIONAL: callbackOrHandlers.notExists
-						//OPTIONAL: callbackOrHandlers.error
-	
-						innerUpdate(data, callbackOrHandlers, true, true);
 					};
 					
 					remove = self.remove = (id, callbackOrHandlers) => {
@@ -1425,7 +1412,141 @@ FOR_BOX((box) => {
 							}, errorHandler);
 						}
 					};
+					
+					findAllAndUpdateNoHistory = self.findAllAndUpdateNoHistory = (params, callbackOrHandlers) => {
+						//REQUIRED: params
+						//OPTIONAL: params.filter
+						//REQUIRED: params.data
+						//OPTIONAL: params.data.$inc
+						//OPTIONAL: params.data.$push
+						//OPTIONAL: params.data.$addToSet
+						//OPTIONAL: params.data.$pull
+						//OPTIONAL: callbackOrHandlers
+						//OPTIONAL: callbackOrHandlers.error
+						//OPTIONAL: callbackOrHandlers.success
+						
+						let filter = params.filter;
+						let data = params.data;
+						
+						let $inc = data.$inc;
+						let $push = data.$push;
+						let $addToSet = data.$addToSet;
+						let $pull = data.$pull;
+						
+						let errorHandler;
+						let callback;
 	
+						try {
+	
+							if (callbackOrHandlers !== undefined) {
+								if (CHECK_IS_DATA(callbackOrHandlers) !== true) {
+									callback = callbackOrHandlers;
+								} else {
+									errorHandler = callbackOrHandlers.error;
+									callback = callbackOrHandlers.success;
+								}
+							}
+	
+							if (filter === undefined) {
+								filter = {};
+							}
+	
+							makeUpFilter(filter);
+							
+							let $unset;
+							
+							EACH(data, (value, name) => {
+								if (name === 'id' || name === '_id' || name === 'createTime' || name[0] === '$') {
+									delete data[name];
+								} else if (value === TO_DELETE) {
+									
+									if ($unset === undefined) {
+										$unset = {};
+									}
+	
+									$unset[name] = '';
+								}
+							});
+							
+							removeEmptyValues(data);
+							
+							data.lastUpdateTime = new Date();
+							
+							let updateData = {};
+							
+							if (CHECK_IS_EMPTY_DATA(data) !== true) {
+								updateData.$set = data;
+							}
+	
+							if ($unset !== undefined) {
+								updateData.$unset = $unset;
+							}
+	
+							if ($inc !== undefined) {
+								removeEmptyValues($inc);
+								if (CHECK_IS_EMPTY_DATA($inc) !== true) {
+									updateData.$inc = $inc;
+								}
+							}
+							
+							if ($push !== undefined) {
+								removeEmptyValues($push);
+								updateData.$push = $push;
+							}
+							
+							if ($addToSet !== undefined) {
+								removeEmptyValues($addToSet);
+								updateData.$addToSet = $addToSet;
+							}
+							
+							if ($pull !== undefined) {
+								removeEmptyValues($pull);
+								updateData.$pull = $pull;
+							}
+							
+							if (backupCollection !== undefined) {
+								backupCollection.updateMany(filter, updateData, (error) => {
+									
+									if (error !== TO_DELETE) {
+										
+										SHOW_ERROR('BACKUP DB', error.toString(), {
+											boxName : box.boxName,
+											name : name
+										});
+									}
+								});
+							}
+
+							collection.updateMany(filter, updateData, {
+								w : 1
+							}, (error) => {
+
+								if (error !== TO_DELETE) {
+	
+									logError({
+										method : 'update',
+										data : data,
+										errorMsg : error.toString()
+									}, errorHandler);
+								}
+								
+								else if (callback !== undefined) {
+									callback();
+								}
+							});
+						}
+	
+						// if catch error
+						catch (error) {
+	
+							logError({
+								method : 'findAllAndUpdateNoHistory',
+								params : params,
+								errorMsg : error.toString()
+							}, errorHandler);
+						}
+					};
+					
 					count = self.count = (params, callbackOrHandlers) => {
 						//OPTIONAL: params
 						//OPTIONAL: params.filter
@@ -1809,7 +1930,7 @@ FOR_BOX((box) => {
 					waitingGetInfos = undefined;
 	
 					EACH(waitingUpdateInfos, (info) => {
-						innerUpdate(info.data, info.callbackOrHandlers, info.isNotToSaveHistory, info.isNotToUpdateLastUpdateTime);
+						innerUpdate(info.data, info.callbackOrHandlers, info.isNotToSaveHistory);
 					});
 	
 					waitingUpdateInfos = undefined;
@@ -1825,6 +1946,12 @@ FOR_BOX((box) => {
 					});
 	
 					waitingFindInfos = undefined;
+	
+					EACH(waitingFindAllAndUpdateNoHistoryInfos, (info) => {
+						findAllAndUpdateNoHistory(info.params, info.callbackOrHandlers);
+					});
+	
+					waitingFindAllAndUpdateNoHistoryInfos = undefined;
 	
 					EACH(waitingCountInfos, (info) => {
 						count(info.params, info.callbackOrHandlers);
@@ -2149,7 +2276,7 @@ OVERRIDE(NODE_CONFIG, (origin) => {
 	 */
 	global.NODE_CONFIG = COMBINE([{
 		
-		// find 함수를 수행할 때 최대로 가져올 데이터의 개수
+		// find를 수행할 때 최대로 가져올 데이터의 개수
 		maxDataCount : 1000
 		
 	}, origin]);

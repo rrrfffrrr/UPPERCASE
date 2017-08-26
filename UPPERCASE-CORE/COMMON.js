@@ -268,6 +268,8 @@ global.CLASS = METHOD((m) => {
 			cls.id = getNextInstanceId();
 
 			let innerInit = cls.innerInit = (inner, self, params, funcs) => {
+				//REQUIRED: inner
+				//REQUIRED: self
 				//OPTIONAL: params
 				//OPTIONAL: funcs
 				
@@ -323,7 +325,7 @@ global.CLASS = METHOD((m) => {
 							mom.innerInit(inner, self, params, funcs);
 						}
 
-						// when mon's type is OBJECT
+						// when mom's type is OBJECT
 						else {
 							mom.type.innerInit(inner, self, params, funcs);
 						}
@@ -338,6 +340,8 @@ global.CLASS = METHOD((m) => {
 			};
 
 			let innerAfterInit = cls.innerAfterInit = (inner, self, params, funcs) => {
+				//REQUIRED: inner
+				//REQUIRED: self
 				//OPTIONAL: params
 				//OPTIONAL: funcs
 
@@ -379,7 +383,7 @@ global.INIT_OBJECTS = METHOD({
 });
 
 /*
- * 실글톤 객체를 생성합니다.
+ * 싱글톤 객체를 생성합니다.
  */
 global.OBJECT = METHOD((m) => {
 
@@ -470,17 +474,17 @@ global.OBJECT = METHOD((m) => {
  */
 global.NEXT = METHOD({
 
-	run : (countOrArray, funcs) => {
+	run : (countOrArray, funcOrFuncs) => {
 		//OPTIONAL: countOrArray
-		//REQUIRED: funcs
+		//REQUIRED: funcOrFuncs
 
 		let count;
 		let array;
 		
 		let f;
 		
-		if (funcs === undefined) {
-			funcs = countOrArray;
+		if (funcOrFuncs === undefined) {
+			funcOrFuncs = countOrArray;
 			countOrArray = undefined;
 		}
 
@@ -491,7 +495,14 @@ global.NEXT = METHOD({
 				array = countOrArray;
 			}
 		}
-
+		
+		let funcs;
+		if (CHECK_IS_ARRAY(funcOrFuncs) !== true) {
+			funcs = [funcOrFuncs];
+		} else {
+			funcs = funcOrFuncs;
+		}
+		
 		REPEAT({
 			start : funcs.length - 1,
 			end : 0
@@ -787,13 +798,24 @@ global.STRINGIFY = METHOD({
 		
 		else if (CHECK_IS_ARRAY(data) === true) {
 			
-			let array = [];
+			let f = (array) => {
+				
+				let newArray = [];
+				
+				EACH(array, (data) => {
+					if (CHECK_IS_DATA(data) === true) {
+						newArray.push(PACK_DATA(data));
+					} else if (CHECK_IS_ARRAY(data) === true) {
+						newArray.push(f(data));
+					} else {
+						newArray.push(data);
+					}
+				});
+				
+				return newArray;
+			};
 			
-			EACH(data, (data) => {
-				array.push(PACK_DATA(data));
-			});
-			
-			return JSON.stringify(array);
+			return JSON.stringify(f(data));
 		}
 		
 		else {
@@ -2336,11 +2358,11 @@ global.LOOP = CLASS((cls) => {
 
 		if (animationInterval === undefined) {
 
-			let beforeTime = Date.now();
+			let beforeTime = Date.now() / 1000;
 
 			animationInterval = INTERVAL(() => {
 
-				let time = Date.now();
+				let time = Date.now() / 1000;
 				let deltaTime = time - beforeTime;
 				
 				if (deltaTime > 0) {
@@ -2357,7 +2379,7 @@ global.LOOP = CLASS((cls) => {
 							}
 
 							// calculate count.
-							let count = parseInt(loopInfo.fps / (1000 / deltaTime) * (loopInfo.timeSigma / deltaTime + 1), 10) - loopInfo.countSigma;
+							let count = parseInt(loopInfo.fps * deltaTime * (loopInfo.timeSigma / deltaTime + 1), 10) - loopInfo.countSigma;
 
 							// start.
 							if (loopInfo.start !== undefined) {

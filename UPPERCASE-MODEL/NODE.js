@@ -126,8 +126,6 @@ FOR_BOX((box) => {
 				let updateAuthKey;
 				let removeAuthKey;
 				
-				let is_idAssignable;
-				
 				let beforeCreateListeners = [];
 				let afterCreateListeners = [];
 				let beforeGetListeners = [];
@@ -197,8 +195,8 @@ FOR_BOX((box) => {
 					}
 				}
 
-				// init not inited data set. (when not cpu clustering or worker id is 1)
-				if ((CPU_CLUSTERING.getWorkerId() === undefined || CPU_CLUSTERING.getWorkerId() === 1) && initData !== undefined) {
+				// init not inited data set. (when worker id is 1)
+				if (CPU_CLUSTERING.getWorkerId() === 1 && initData !== undefined) {
 					
 					let $or = [];
 
@@ -483,9 +481,10 @@ FOR_BOX((box) => {
 								// create data in database.
 								db.create(data, {
 
-									error : (errorMsg) => {
+									error : (errorMsg, errorInfo) => {
 										ret({
-											errorMsg : errorMsg
+											errorMsg : errorMsg,
+											errorInfo : errorInfo
 										});
 									},
 
@@ -545,7 +544,6 @@ FOR_BOX((box) => {
 					//OPTIONAL: idOrParams.filter
 					//OPTIONAL: idOrParams.sort
 					//OPTIONAL: idOrParams.isRandom
-					//OPTIONAL: idOrParams.isToCache
 					//OPTIONAL: idOrParams.clientInfo
 
 					let isIdMode;
@@ -553,7 +551,6 @@ FOR_BOX((box) => {
 					let filter;
 					let sort;
 					let isRandom;
-					let isToCache;
 					let params;
 
 					// init params.
@@ -572,7 +569,6 @@ FOR_BOX((box) => {
 							filter = idOrParams.filter;
 							sort = idOrParams.sort;
 							isRandom = idOrParams.isRandom;
-							isToCache = idOrParams.isToCache;
 							
 							if (clientInfo === undefined) {
 								clientInfo = idOrParams.clientInfo;
@@ -583,8 +579,7 @@ FOR_BOX((box) => {
 							id : id,
 							filter : filter,
 							sort : sort,
-							isRandom : isRandom,
-							isToCache : isToCache
+							isRandom : isRandom
 						};
 					}
 					
@@ -611,9 +606,10 @@ FOR_BOX((box) => {
 							// get data in database.
 							db.get(params, {
 								
-								error : (errorMsg) => {
+								error : (errorMsg, errorInfo) => {
 									ret({
-										errorMsg : errorMsg
+										errorMsg : errorMsg,
+										errorInfo : errorInfo
 									});
 								},
 								
@@ -654,7 +650,7 @@ FOR_BOX((box) => {
 					}]);
 				};
 
-				let innerUpdate = (data, ret, clientInfo, isNotToSaveHistory, isNotToUpdateLastUpdateTime) => {
+				let innerUpdate = (data, ret, clientInfo, isNotToSaveHistory) => {
 
 					let id = data.id;
 					let $inc = data.$inc;
@@ -771,13 +767,12 @@ FOR_BOX((box) => {
 							return () => {
 
 								// update data in database.
-								(isNotToUpdateLastUpdateTime === true ? db.updateNoRecord :
-								(isNotToSaveHistory === true ? db.updateNoHistory :
-								db.update))(data, {
+								(isNotToSaveHistory === true ? db.updateNoHistory : db.update)(data, {
 
-									error : (errorMsg) => {
+									error : (errorMsg, errorInfo) => {
 										ret({
-											errorMsg : errorMsg
+											errorMsg : errorMsg,
+											errorInfo : errorInfo
 										});
 									},
 
@@ -854,9 +849,10 @@ FOR_BOX((box) => {
 							// remove data in database.
 							db.remove(id, {
 
-								error : (errorMsg) => {
+								error : (errorMsg, errorInfo) => {
 									ret({
-										errorMsg : errorMsg
+										errorMsg : errorMsg,
+										errorInfo : errorInfo
 									});
 								},
 
@@ -927,7 +923,6 @@ FOR_BOX((box) => {
 					//OPTIONAL: params.start
 					//OPTIONAL: params.count
 					//OPTIONAL: params.isFindAll
-					//OPTIONAL: params.isToCache
 					//OPTIONAL: params.clientInfo
 
 					let filter;
@@ -935,7 +930,6 @@ FOR_BOX((box) => {
 					let start;
 					let count;
 					let isFindAll;
-					let isToCache;
 
 					if (params !== undefined) {
 						filter = params.filter;
@@ -943,7 +937,6 @@ FOR_BOX((box) => {
 						start = INTEGER(params.start);
 						count = INTEGER(params.count);
 						isFindAll = params.isFindAll;
-						isToCache = params.isToCache;
 						
 						if (clientInfo === undefined) {
 							clientInfo = params.clientInfo;
@@ -955,8 +948,7 @@ FOR_BOX((box) => {
 						sort : sort,
 						start : start,
 						count : count,
-						isFindAll : isFindAll,
-						isToCache : isToCache
+						isFindAll : isFindAll
 					};
 					
 					NEXT([
@@ -982,9 +974,10 @@ FOR_BOX((box) => {
 							// find data set in database.
 							db.find(params, {
 		
-								error : (errorMsg) => {
+								error : (errorMsg, errorInfo) => {
 									ret({
-										errorMsg : errorMsg
+										errorMsg : errorMsg,
+										errorInfo : errorInfo
 									});
 								},
 		
@@ -1024,15 +1017,12 @@ FOR_BOX((box) => {
 				let innerCount = (params, ret, clientInfo) => {
 					//OPTIONAL: params
 					//OPTIONAL: params.filter
-					//OPTIONAL: params.isToCache
 					//OPTIONAL: params.clientInfo
 
 					let filter;
-					let isToCache;
 
 					if (params !== undefined) {
 						filter = params.filter;
-						isToCache = params.isToCache;
 						
 						if (clientInfo === undefined) {
 							clientInfo = params.clientInfo;
@@ -1040,8 +1030,7 @@ FOR_BOX((box) => {
 					}
 					
 					params = {
-						filter : filter,
-						isToCache : isToCache
+						filter : filter
 					};
 					
 					NEXT([
@@ -1067,9 +1056,10 @@ FOR_BOX((box) => {
 							// count data in database.
 							db.count(params, {
 		
-								error : (errorMsg) => {
+								error : (errorMsg, errorInfo) => {
 									ret({
-										errorMsg : errorMsg
+										errorMsg : errorMsg,
+										errorInfo : errorInfo
 									});
 								},
 		
@@ -1109,15 +1099,12 @@ FOR_BOX((box) => {
 				let innerCheckIsExists = (params, ret, clientInfo) => {
 					//OPTIONAL: params
 					//OPTIONAL: params.filter
-					//OPTIONAL: params.isToCache
 					//OPTIONAL: params.clientInfo
 
 					let filter;
-					let isToCache;
 
 					if (params !== undefined) {
 						filter = params.filter;
-						isToCache = params.isToCache;
 						
 						if (clientInfo === undefined) {
 							clientInfo = params.clientInfo;
@@ -1125,8 +1112,7 @@ FOR_BOX((box) => {
 					}
 					
 					params = {
-						filter : filter,
-						isToCache : isToCache
+						filter : filter
 					};
 					
 					NEXT([
@@ -1152,9 +1138,10 @@ FOR_BOX((box) => {
 							// check is exists data in database.
 							db.checkIsExists(params, {
 		
-								error : (errorMsg) => {
+								error : (errorMsg, errorInfo) => {
 									ret({
-										errorMsg : errorMsg
+										errorMsg : errorMsg,
+										errorInfo : errorInfo
 									});
 								},
 		
@@ -1215,12 +1202,14 @@ FOR_BOX((box) => {
 					innerCreate(data, (result) => {
 
 						let errorMsg;
+						let errorInfo;
 						let validErrors;
 						let savedData;
 
 						if (result !== undefined) {
 
 							errorMsg = result.errorMsg;
+							errorInfo = result.errorInfo;
 							validErrors = result.validErrors;
 							savedData = result.savedData;
 
@@ -1228,7 +1217,7 @@ FOR_BOX((box) => {
 								if (errorHandler !== undefined) {
 									errorHandler(errorMsg);
 								} else {
-									SHOW_ERROR(box.boxName + '.' + name + 'Model.create', errorMsg);
+									SHOW_ERROR(box.boxName + '.' + name + 'Model.create', errorMsg, errorInfo);
 								}
 							} else if (validErrors !== undefined) {
 								if (notValidHandler !== undefined) {
@@ -1257,7 +1246,6 @@ FOR_BOX((box) => {
 					//OPTIONAL: idOrParams.filter
 					//OPTIONAL: idOrParams.sort
 					//OPTIONAL: idOrParams.isRandom
-					//OPTIONAL: idOrParams.isToCache
 					//OPTIONAL: idOrParams.clientInfo
 					//REQUIRED: callbackOrHandlers
 					//OPTIONAL: callbackOrHandlers.error
@@ -1285,10 +1273,12 @@ FOR_BOX((box) => {
 					innerGet(idOrParams, (result) => {
 
 						let errorMsg;
+						let errorInfo;
 						let savedData;
 
 						if (result !== undefined) {
 							errorMsg = result.errorMsg;
+							errorInfo = result.errorInfo;
 							savedData = result.savedData;
 						}
 
@@ -1296,7 +1286,7 @@ FOR_BOX((box) => {
 							if (errorHandler !== undefined) {
 								errorHandler(errorMsg);
 							} else {
-								SHOW_ERROR(box.boxName + '.' + name + 'Model.get', errorMsg);
+								SHOW_ERROR(box.boxName + '.' + name + 'Model.get', errorMsg, errorInfo);
 							}
 						} else if (savedData === undefined) {
 							if (notExistsHandler !== undefined) {
@@ -1340,12 +1330,14 @@ FOR_BOX((box) => {
 					innerUpdate(data, (result) => {
 
 						let errorMsg;
+						let errorInfo;
 						let validErrors;
 						let savedData;
 						let originData;
 
 						if (result !== undefined) {
 							errorMsg = result.errorMsg;
+							errorInfo = result.errorInfo;
 							validErrors = result.validErrors;
 							savedData = result.savedData;
 							originData = result.originData;
@@ -1355,7 +1347,7 @@ FOR_BOX((box) => {
 							if (errorHandler !== undefined) {
 								errorHandler(errorMsg);
 							} else {
-								SHOW_ERROR(box.boxName + '.' + name + 'Model.update', errorMsg);
+								SHOW_ERROR(box.boxName + '.' + name + 'Model.update', errorMsg, errorInfo);
 							}
 						} else if (validErrors !== undefined) {
 							if (notValidHandler !== undefined) {
@@ -1410,12 +1402,14 @@ FOR_BOX((box) => {
 					innerUpdate(data, (result) => {
 
 						let errorMsg;
+						let errorInfo;
 						let validErrors;
 						let savedData;
 						let originData;
 
 						if (result !== undefined) {
 							errorMsg = result.errorMsg;
+							errorInfo = result.errorInfo;
 							validErrors = result.validErrors;
 							savedData = result.savedData;
 							originData = result.originData;
@@ -1425,7 +1419,7 @@ FOR_BOX((box) => {
 							if (errorHandler !== undefined) {
 								errorHandler(errorMsg);
 							} else {
-								SHOW_ERROR(box.boxName + '.' + name + 'Model.update', errorMsg);
+								SHOW_ERROR(box.boxName + '.' + name + 'Model.update', errorMsg, errorInfo);
 							}
 						} else if (validErrors !== undefined) {
 							if (notValidHandler !== undefined) {
@@ -1453,77 +1447,6 @@ FOR_BOX((box) => {
 					}, undefined, true);
 				};
 				
-				let updateNoRecord = self.updateNoRecord = (data, callbackOrHandlers) => {
-					//REQUIRED: data
-					//REQUIRED: data.id
-					//OPTIONAL: callbackOrHandlers
-					//OPTIONAL: callbackOrHandlers.error
-					//OPTIONAL: callbackOrHandlers.notValid
-					//OPTIONAL: callbackOrHandlers.notExists
-					//OPTIONAL: callbackOrHandlers.success
-
-					let errorHandler;
-					let notValidHandler;
-					let notExistsHandler;
-					let callback;
-
-					if (callbackOrHandlers !== undefined) {
-						if (CHECK_IS_DATA(callbackOrHandlers) !== true) {
-							callback = callbackOrHandlers;
-						} else {
-							errorHandler = callbackOrHandlers.error;
-							notValidHandler = callbackOrHandlers.notValid;
-							notExistsHandler = callbackOrHandlers.notExists;
-							callback = callbackOrHandlers.success;
-						}
-					}
-
-					innerUpdate(data, (result) => {
-
-						let errorMsg;
-						let validErrors;
-						let savedData;
-						let originData;
-
-						if (result !== undefined) {
-							errorMsg = result.errorMsg;
-							validErrors = result.validErrors;
-							savedData = result.savedData;
-							originData = result.originData;
-						}
-
-						if (errorMsg !== undefined) {
-							if (errorHandler !== undefined) {
-								errorHandler(errorMsg);
-							} else {
-								SHOW_ERROR(box.boxName + '.' + name + 'Model.update', errorMsg);
-							}
-						} else if (validErrors !== undefined) {
-							if (notValidHandler !== undefined) {
-								notValidHandler(validErrors);
-							} else {
-								SHOW_WARNING(box.boxName + '.' + name + 'Model.update', MSG({
-									ko : '데이터가 유효하지 않습니다.'
-								}), {
-									data : data,
-									validErrors : validErrors
-								});
-							}
-						} else if (savedData === undefined) {
-							if (notExistsHandler !== undefined) {
-								notExistsHandler();
-							} else {
-								SHOW_WARNING(box.boxName + '.' + name + 'Model.update', MSG({
-									ko : '수정할 데이터가 존재하지 않습니다.'
-								}), data);
-							}
-						} else if (callback !== undefined) {
-							callback(savedData, originData);
-						}
-						
-					}, undefined, true, true);
-				};
-				
 				let remove = self.remove = (id, callbackOrHandlers) => {
 					//REQUIRED: id
 					//OPTIONAL: callbackOrHandlers
@@ -1548,10 +1471,12 @@ FOR_BOX((box) => {
 					innerRemove(id, (result) => {
 
 						let errorMsg;
+						let errorInfo;
 						let originData;
 
 						if (result !== undefined) {
 							errorMsg = result.errorMsg;
+							errorInfo = result.errorInfo;
 							originData = result.originData;
 						}
 
@@ -1559,7 +1484,7 @@ FOR_BOX((box) => {
 							if (errorHandler !== undefined) {
 								errorHandler(errorMsg);
 							} else {
-								SHOW_ERROR(box.boxName + '.' + name + 'Model.remove', errorMsg);
+								SHOW_ERROR(box.boxName + '.' + name + 'Model.remove', errorMsg, errorInfo);
 							}
 						} else if (originData === undefined) {
 							if (notExistsHandler !== undefined) {
@@ -1582,7 +1507,6 @@ FOR_BOX((box) => {
 					//OPTIONAL: params.start
 					//OPTIONAL: params.count
 					//OPTIONAL: params.isFindAll
-					//OPTIONAL: params.isToCache
 					//REQUIRED: callbackOrHandlers
 					//OPTIONAL: callbackOrHandlers.error
 					//REQUIRED: callbackOrHandlers.success
@@ -1608,13 +1532,14 @@ FOR_BOX((box) => {
 					innerFind(params, (result) => {
 
 						let errorMsg = result.errorMsg;
+						let errorInfo = result.errorInfo;
 						let savedDataSet = result.savedDataSet;
 
 						if (errorMsg !== undefined) {
 							if (errorHandler !== undefined) {
 								errorHandler(errorMsg);
 							} else {
-								SHOW_ERROR(box.boxName + '.' + name + 'Model.find', errorMsg);
+								SHOW_ERROR(box.boxName + '.' + name + 'Model.find', errorMsg, errorInfo);
 							}
 						} else {
 							callback(savedDataSet);
@@ -1625,7 +1550,6 @@ FOR_BOX((box) => {
 				let count = self.count = (params, callbackOrHandlers) => {
 					//OPTIONAL: params
 					//OPTIONAL: params.filter
-					//OPTIONAL: params.isToCache
 					//REQUIRED: callbackOrHandlers
 					//OPTIONAL: callbackOrHandlers.error
 					//REQUIRED: callbackOrHandlers.success
@@ -1651,13 +1575,14 @@ FOR_BOX((box) => {
 					innerCount(params, (result) => {
 
 						let errorMsg = result.errorMsg;
+						let errorInfo = result.errorInfo;
 						let count = result.count;
 
 						if (errorMsg !== undefined) {
 							if (errorHandler !== undefined) {
 								errorHandler(errorMsg);
 							} else {
-								SHOW_ERROR(box.boxName + '.' + name + 'Model.count', errorMsg);
+								SHOW_ERROR(box.boxName + '.' + name + 'Model.count', errorMsg, errorInfo);
 							}
 						} else {
 							callback(count);
@@ -1668,7 +1593,6 @@ FOR_BOX((box) => {
 				let checkIsExists = self.checkIsExists = (params, callbackOrHandlers) => {
 					//OPTIONAL: params
 					//OPTIONAL: params.filter
-					//OPTIONAL: params.isToCache
 					//REQUIRED: callbackOrHandlers
 					//OPTIONAL: callbackOrHandlers.error
 					//REQUIRED: callbackOrHandlers.success
@@ -1694,13 +1618,14 @@ FOR_BOX((box) => {
 					innerCheckIsExists(params, (result) => {
 
 						let errorMsg = result.errorMsg;
+						let errorInfo = result.errorInfo;
 						let isExists = result.isExists;
 
 						if (errorMsg !== undefined) {
 							if (errorHandler !== undefined) {
 								errorHandler(errorMsg);
 							} else {
-								SHOW_ERROR(box.boxName + '.' + name + 'Model.checkIsExists', errorMsg);
+								SHOW_ERROR(box.boxName + '.' + name + 'Model.checkIsExists', errorMsg, errorInfo);
 							}
 						} else {
 							callback(isExists);
@@ -1760,12 +1685,6 @@ FOR_BOX((box) => {
 								value : getRole
 							}) === true)) {
 								
-								if (idOrParams !== undefined && CHECK_IS_DATA(idOrParams) === true) {
-
-									// delete for server params.
-									delete idOrParams.isToCache;
-								}
-
 								innerGet(idOrParams, ret, clientInfo);
 
 							} else {
@@ -1803,9 +1722,10 @@ FOR_BOX((box) => {
 										// get data in database.
 										db.get(data.id, {
 	
-											error : (errorMsg) => {
+											error : (errorMsg, errorInfo) => {
 												ret({
-													errorMsg : errorMsg
+													errorMsg : errorMsg,
+													errorInfo : errorInfo
 												});
 											},
 	
@@ -1873,9 +1793,10 @@ FOR_BOX((box) => {
 										// get data in database.
 										db.get(id, {
 	
-											error : (errorMsg) => {
+											error : (errorMsg, errorInfo) => {
 												ret({
-													errorMsg : errorMsg
+													errorMsg : errorMsg,
+													errorInfo : errorInfo
 												});
 											},
 	
@@ -1944,7 +1865,6 @@ FOR_BOX((box) => {
 
 									// delete for server params.
 									delete params.isFindAll;
-									delete params.isToCache;
 								}
 
 								innerFind(params, ret, clientInfo);
@@ -1969,12 +1889,6 @@ FOR_BOX((box) => {
 								value : countRole
 							}) === true)) {
 								
-								if (params !== undefined) {
-
-									// delete for server params.
-									delete params.isToCache;
-								}
-
 								innerCount(params, ret, clientInfo);
 
 							} else {
@@ -1997,12 +1911,6 @@ FOR_BOX((box) => {
 								value : checkIsExistsRole
 							}) === true)) {
 								
-								if (params !== undefined) {
-
-									// delete for server params.
-									delete params.isToCache;
-								}
-
 								innerCheckIsExists(params, ret, clientInfo);
 
 							} else {

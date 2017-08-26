@@ -23,6 +23,10 @@ global.CPU_CLUSTERING = METHOD((m) => {
 		return thisWorkerId;
 	};
 
+	let checkIsMaster = m.checkIsMaster = () => {
+		return Cluster.isMaster;
+	};
+
 	return {
 
 		run : (work) => {

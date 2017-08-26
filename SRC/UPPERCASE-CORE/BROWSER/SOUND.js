@@ -12,13 +12,20 @@ global.SOUND = CLASS((cls) => {
 			//OPTIONAL: params.ogg
 			//OPTIONAL: params.mp3
 			//OPTIONAL: params.isLoop
+			//OPTIONAL: params.gain
 
 			let ogg = params.ogg;
 			let mp3 = params.mp3;
 			let isLoop = params.isLoop;
+			let gain = params.gain;
+			
+			if (gain === undefined) {
+				gain = 0.5;
+			}
 			
 			let buffer;
 			let source;
+			let gainNode;
 			
 			let startedAt = 0;
 			let pausedAt = 0;
@@ -38,14 +45,12 @@ global.SOUND = CLASS((cls) => {
 
 				audioContext.decodeAudioData(request.response, (_buffer) => {
 
-					let gain = audioContext.createGain ? audioContext.createGain() : audioContext.createGainNode();
+					gainNode = audioContext.createGain();
 
 					buffer = _buffer;
-
-					// default volume
-					// support both webkitAudioContext or standard AudioContext
-					gain.connect(audioContext.destination);
-					gain.gain.value = 0.5;
+					
+					gainNode.connect(audioContext.destination);
+					gainNode.gain.value = gain;
 
 					if (delayed !== undefined) {
 						delayed();
@@ -59,13 +64,8 @@ global.SOUND = CLASS((cls) => {
 				delayed = () => {
 
 					source = audioContext.createBufferSource();
-					// creates a sound source
 					source.buffer = buffer;
-					// tell the source which sound to play
-					source.connect(audioContext.destination);
-					// connect the source to the context's destination (the speakers)
-					// support both webkitAudioContext or standard AudioContext
-
+					source.connect(gainNode);
 					source.loop = isLoop;
 					
 					startedAt = Date.now() - pausedAt;
@@ -92,6 +92,16 @@ global.SOUND = CLASS((cls) => {
 				if (source !== undefined) {
 					source.stop(0);
 					pausedAt = 0;
+					
+					source = undefined;
+				}
+			};
+			
+			let setGain = self.setGain = (_gain) => {
+				gain = _gain;
+				
+				if (gainNode !== undefined) {
+					gainNode.gain.value = gain;
 				}
 			};
 		}
